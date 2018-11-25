@@ -1,4 +1,5 @@
 #include "Arduino.h"
+#include "HardwareSerial.h"
 
 
 
@@ -35,8 +36,8 @@
     
     
       //initialize the GPS data extractor class and the GPS itself (overloaded)
-      void begin(Stream& _GPS_SERIAL, Stream& _PC_SERIAL);
-      void begin(Stream& _GPS_SERIAL);
+      void begin(HardwareSerial& _GPS_SERIAL, HardwareSerial& _PC_SERIAL);
+      void begin(HardwareSerial& _GPS_SERIAL);
       
       //update lat and lon in the GPS_data array
       void grabData_LatLong();
@@ -46,8 +47,8 @@
     
     private:
       //serial stream variables (can be hardware or software serial)
-      Stream* PC_SERIAL = 0;
-      Stream* GPS_SERIAL;
+      HardwareSerial*  PC_SERIAL = 0;
+      HardwareSerial*  GPS_SERIAL;
     
       //array of possible baudrates that can be used by the receiver, sorted descending to prevent excess Serial flush/begin
       //after restoring defaults. You can uncomment values that can be used by your receiver before the auto-configuration.
