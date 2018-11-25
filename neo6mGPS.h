@@ -6,9 +6,13 @@
 
 #ifndef neo6mGPS_cpp
   #define neo6mGPS_cpp
+
   #define buffLen 64
   #define dataLen 2
   #define baudLen 2
+
+  #define LAT_POS 0
+  #define LON_POS 1
   
 
 
