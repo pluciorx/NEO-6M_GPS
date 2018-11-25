@@ -7,6 +7,7 @@
   #define neo6mGPS_cpp
   #define buffLen 64
   #define dataLen 2
+  #define baudLen 2
   
 
 
@@ -54,7 +55,7 @@
     
       //array of possible baudrates that can be used by the receiver, sorted descending to prevent excess Serial flush/begin
       //after restoring defaults. You can uncomment values that can be used by your receiver before the auto-configuration.
-      uint32_t possibleBaudrates[] = {
+      uint32_t possibleBaudrates[baudLen] = {
                                           //921600,
                                           //460800,
                                           //230400,
@@ -67,7 +68,7 @@
                                         };
     
     //create buffer to process incoming info from GPS
-    byte buff[buffLen] = {" "};
+    byte buff[buffLen] = {0x20};
     
     
     
