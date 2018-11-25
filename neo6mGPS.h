@@ -35,7 +35,6 @@
     
     
       //initialize the GPS data extractor class and the GPS itself (overloaded)
-      void begin(Stream& _GPS_SERIAL, Stream& _PC_SERIAL, uint32_t _PC_BAUDRATE);
       void begin(Stream& _GPS_SERIAL, Stream& _PC_SERIAL);
       void begin(Stream& _GPS_SERIAL);
       
@@ -49,9 +48,6 @@
       //serial stream variables (can be hardware or software serial)
       Stream* PC_SERIAL = 0;
       Stream* GPS_SERIAL;
-    
-      //user defined buad for PC (if given)
-      uint32_t PC_BAUDRATE;
     
       //array of possible baudrates that can be used by the receiver, sorted descending to prevent excess Serial flush/begin
       //after restoring defaults. You can uncomment values that can be used by your receiver before the auto-configuration.
