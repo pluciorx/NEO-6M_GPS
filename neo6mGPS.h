@@ -5,6 +5,8 @@
 
 #ifndef neo6mGPS_cpp
   #define neo6mGPS_cpp
+  #define buffLen 64
+  #define dataLen 2
   
 
 
@@ -13,7 +15,7 @@
   {
     public:                           
       //array holding all GPS values that can be updated
-      float GPS_data[] = {
+      float GPS_data[dataLen] = {
                             //latitude:
                             0.0,
                             
@@ -44,11 +46,11 @@
       uint32_t PC_BAUDRATE;
     
       //default baudrate is determined by the receiver manufacturer.
-      uint32_t GPS_DEFAULT_BAUDRATE 9600
+      uint32_t GPS_DEFAULT_BAUDRATE 9600;
 
       //wanted buadrate at the moment can be 9600L (not changed after defaults) or 115200L (changed by the
       //`changeBaudrate()`
-      uint32_t GPS_WANTED_BAUDRATE 115200
+      uint32_t GPS_WANTED_BAUDRATE 115200;
     
       //array of possible baudrates that can be used by the receiver, sorted descending to prevent excess Serial flush/begin
       //after restoring defaults. You can uncomment values that can be used by your receiver before the auto-configuration.
@@ -65,7 +67,6 @@
                                         };
     
     //create buffer to process incoming info from GPS
-    byte buffLen = 64;
     byte buff[buffLen] = {" "};
     
     
