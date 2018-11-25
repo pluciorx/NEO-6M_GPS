@@ -13,7 +13,14 @@
 
   class neo6mGPS
   {
-    public:                           
+    public:
+      //default baudrate is determined by the receiver manufacturer.
+      uint32_t GPS_DEFAULT_BAUDRATE = 9600;
+
+      //wanted buadrate at the moment can be 9600L (not changed after defaults) or 115200L (changed by the
+      //`changeBaudrate()`)
+      uint32_t GPS_WANTED_BAUDRATE = 115200;
+      
       //array holding all GPS values that can be updated
       float GPS_data[dataLen] = {
                             //latitude:
@@ -44,13 +51,6 @@
     
       //user defined buad for PC (if given)
       uint32_t PC_BAUDRATE;
-    
-      //default baudrate is determined by the receiver manufacturer.
-      uint32_t GPS_DEFAULT_BAUDRATE 9600;
-
-      //wanted buadrate at the moment can be 9600L (not changed after defaults) or 115200L (changed by the
-      //`changeBaudrate()`
-      uint32_t GPS_WANTED_BAUDRATE 115200;
     
       //array of possible baudrates that can be used by the receiver, sorted descending to prevent excess Serial flush/begin
       //after restoring defaults. You can uncomment values that can be used by your receiver before the auto-configuration.
