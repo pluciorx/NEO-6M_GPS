@@ -4,7 +4,7 @@
 
 
 //initialize the GPS data extractor class and the GPS itself
-void neo6mGPS::begin(Stream &_GPS_SERIAL, Stream &_PC_SERIAL)
+void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, HardwareSerial &_PC_SERIAL)
 {
   //update serial streams
   GPS_SERIAL = &_GPS_SERIAL;
@@ -20,7 +20,7 @@ void neo6mGPS::begin(Stream &_GPS_SERIAL, Stream &_PC_SERIAL)
 
 
 //initialize the GPS data extractor class and the GPS itself
-void neo6mGPS::begin(Stream &_GPS_SERIAL)
+void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL)
 {
   //update serial stream
   GPS_SERIAL = &_GPS_SERIAL;
