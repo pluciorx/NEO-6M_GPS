@@ -413,9 +413,6 @@ void neo6mGPS::printPacket(byte *packet, byte len)
 //update lat and lon in the GPS_data array
 void neo6mGPS::grabData_LatLong()
 {
-  byte buffLen = 64;
-  byte buff[buffLen] = {" "};
-
   byte trash = 0;
 
   /* See if GSP data stream started */
@@ -443,7 +440,7 @@ void neo6mGPS::grabData_LatLong()
       buff[i] = trash;
     }
 
-    extractLatLong(buff, buffLen);
+    extractLatLong();
   }
   
   return;
@@ -529,16 +526,16 @@ void neo6mGPS::extractLatLong()
 //convert from minutes seconds to degrees
 void neo6mGPS::convertLatLong(byte latBuff[], byte lonBuff[])
 {
-  latitude = ((latBuff[1]*10) + latBuff[2]) + ((latBuff[3]*10) + latBuff[4])/60.0 + ((latBuff[6]*10) + latBuff[7] + (latBuff[8]/10.0) + (latBuff[9]/100.0) + (latBuff[10]/1000.0))/3600.0;
+  GPS_data[LAT_POS] = ((latBuff[1]*10) + latBuff[2]) + ((latBuff[3]*10) + latBuff[4])/60.0 + ((latBuff[6]*10) + latBuff[7] + (latBuff[8]/10.0) + (latBuff[9]/100.0) + (latBuff[10]/1000.0))/3600.0;
   if(latBuff[11] == 'S')
   {
-    latitude = -latitude;
+    GPS_data[LAT_POS] = -latitude;
   }
 
-  longitude = ((lonBuff[0]*100) + (lonBuff[1]*10) + lonBuff[2]) + ((lonBuff[3]*10) + lonBuff[4])/60.0 + ((lonBuff[6]*10) + lonBuff[7] + (lonBuff[8]/10.0) + (lonBuff[9]/100.0) + (lonBuff[10]/1000.0))/3600.0;
+  GPS_data[LON_POS] = ((lonBuff[0]*100) + (lonBuff[1]*10) + lonBuff[2]) + ((lonBuff[3]*10) + lonBuff[4])/60.0 + ((lonBuff[6]*10) + lonBuff[7] + (lonBuff[8]/10.0) + (lonBuff[9]/100.0) + (lonBuff[10]/1000.0))/3600.0;
   if(lonBuff[11] == 'W')
   {
-    longitude = -longitude;
+    GPS_data[LON_POS] = -longitude;
   }
 
   return;
