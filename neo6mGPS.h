@@ -4,7 +4,6 @@
 
 
 #ifndef neo6mGPS_cpp
-
   #define neo6mGPS_cpp
   
 
