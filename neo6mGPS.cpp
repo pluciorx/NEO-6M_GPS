@@ -4,34 +4,14 @@
 
 
 //initialize the GPS data extractor class and the GPS itself
-void neo6mGPS::begin(Stream &_GPS_SERIAL, Stream &_PC_SERIAL, uint32_t _PC_BAUDRATE)
-{
-  //update serial streams
-  GPS_SERIAL = &_GPS_SERIAL;
-  PC_SERIAL = &_PC_SERIAL;
-  PC_BAUDRATE = &_PC_BAUDRATE;
-  
-  //initialise PC serial connection if baud given
-  PC_SERIAL.begin(PC_BAUDRATE);
-  
-  //setup GPS
-  setupGPS()
-  
-  return;
-}
-
-
-
-
-//initialize the GPS data extractor class and the GPS itself
-void neo6mGPS::begin(Stream &GPS_SERIAL, Stream &_PC_SERIAL)
+void neo6mGPS::begin(Stream &_GPS_SERIAL, Stream &_PC_SERIAL)
 {
   //update serial streams
   GPS_SERIAL = &_GPS_SERIAL;
   PC_SERIAL = &_PC_SERIAL;
   
   //setup GPS
-  setupGPS()
+  setupGPS();
   
   return;
 }
@@ -46,7 +26,7 @@ void neo6mGPS::begin(Stream &_GPS_SERIAL)
   GPS_SERIAL = &_GPS_SERIAL;
   
   //setup GPS
-  setupGPS()
+  setupGPS();
   
   return;
 }
@@ -58,25 +38,25 @@ void neo6mGPS::begin(Stream &_GPS_SERIAL)
 void neo6mGPS::setupGPS()
 {
   if(PC_SERIAL != 0)
-    PC_SERIAL.println("Starting auto-configuration...");
+    PC_SERIAL->println("Starting auto-configuration...");
 
   // Restore the receiver default configuration.
   for (byte i = 0; i < sizeof(possibleBaudrates) / sizeof(*possibleBaudrates); i++)
   {
     if(PC_SERIAL != 0)
     {
-      PC_SERIAL.print("Trying to restore defaults at ");
-      PC_SERIAL.print(possibleBaudrates[i]);
-      PC_SERIAL.println(" baudrate...");
+      PC_SERIAL->print("Trying to restore defaults at ");
+      PC_SERIAL->print(possibleBaudrates[i]);
+      PC_SERIAL->println(" baudrate...");
     }
 
     if (i != 0)
     {
       delay(100); // Little delay before flushing.
-      GPS_SERIAL.flush();
+      GPS_SERIAL->flush();
     }
 
-    GPS_SERIAL.begin(possibleBaudrates[i]);
+    GPS_SERIAL->begin(possibleBaudrates[i]);
     restoreDefaults();
   }
 
@@ -85,19 +65,19 @@ void neo6mGPS::setupGPS()
   {
     if(PC_SERIAL != 0)
     {
-      PC_SERIAL.print("Switching to the default baudrate which is ");
-      PC_SERIAL.print(GPS_DEFAULT_BAUDRATE);
-      PC_SERIAL.println("...");
+      PC_SERIAL->print("Switching to the default baudrate which is ");
+      PC_SERIAL->print(GPS_DEFAULT_BAUDRATE);
+      PC_SERIAL->println("...");
     }
 
     delay(100); // Little delay before flushing.
-    GPS_SERIAL.flush();
-    GPS_SERIAL.begin(GPS_DEFAULT_BAUDRATE);
+    GPS_SERIAL->flush();
+    GPS_SERIAL->begin(GPS_DEFAULT_BAUDRATE);
   }
 
   // Disable NMEA messages by sending appropriate packets.
   if(PC_SERIAL != 0)
-    PC_SERIAL.println("Disabling NMEA messages...");
+    PC_SERIAL->println("Disabling NMEA messages...");
   disableNmea();
 
   // Switch the receiver serial to the wanted baudrate.
@@ -105,37 +85,38 @@ void neo6mGPS::setupGPS()
   {
     if(PC_SERIAL != 0)
     {
-      PC_SERIAL.print("Switching receiver to the wanted baudrate which is ");
-      PC_SERIAL.print(GPS_WANTED_BAUDRATE);
-      PC_SERIAL.println("...");
+      PC_SERIAL->print("Switching receiver to the wanted baudrate which is ");
+      PC_SERIAL->print(GPS_WANTED_BAUDRATE);
+      PC_SERIAL->println("...");
     }
 
     changeBaudrate();
 
     delay(100); // Little delay before flushing.
-    GPS_SERIAL.flush();
-    GPS_SERIAL.begin(GPS_WANTED_BAUDRATE);
+    GPS_SERIAL->flush();
+    GPS_SERIAL->begin(GPS_WANTED_BAUDRATE);
   }
 
   // Increase frequency to 100 ms.
   if(PC_SERIAL != 0)
-    PC_SERIAL.println("Changing receiving frequency to 100 ms...");
+    PC_SERIAL->println("Changing receiving frequency to 100 ms...");
   changeFrequency();
 
   // Disable unnecessary channels like SBAS or QZSS.
-  PC_SERIAL.println("Disabling unnecessary channels...");
+  if(PC_SERIAL != 0)
+    PC_SERIAL->println("Disabling unnecessary channels...");
   disableUnnecessaryChannels();
 
   // Enable NAV-PVT messages.
   if(PC_SERIAL != 0)
-    PC_SERIAL.println("Enabling NAV-PVT messages...");
+    PC_SERIAL->println("Enabling NAV-PVT messages...");
   enableNavPvt();
 
   if(PC_SERIAL != 0)
-    PC_SERIAL.println("Auto-configuration is complete!");
+    PC_SERIAL->println("Auto-configuration is complete!");
 
   delay(100); // Little delay before flushing.
-  GPS_SERIAL.flush();
+  GPS_SERIAL->flush();
 
   return;
 }
@@ -387,7 +368,7 @@ void neo6mGPS::sendPacket(byte *packet, byte len)
 {
   for (byte i = 0; i < len; i++)
   {
-    GPS_SERIAL.write(packet[i]);
+    GPS_SERIAL->write(packet[i]);
   }
 
   printPacket(packet, len);
@@ -402,21 +383,26 @@ void neo6mGPS::sendPacket(byte *packet, byte len)
 void neo6mGPS::printPacket(byte *packet, byte len)
 {
   char temp[3];
-
-  PC_SERIAL.print("\t");
-
-  for (byte i = 0; i < len; i++)
+  
+  if(PC_SERIAL != 0)
   {
-    sprintf(temp, "%.2X", packet[i]);
-    PC_SERIAL.print(temp);
-
-    if (i != len - 1)
+    PC_SERIAL->print("\t");
+    
+    for (byte i = 0; i < len; i++)
     {
-      PC_SERIAL.print(' ');
-    }
-  }
+      sprintf(temp, "%.2X", packet[i]);
+      PC_SERIAL->print(temp);
 
-  PC_SERIAL.println();
+      if (i != len - 1)
+      {
+        PC_SERIAL->print(' ');
+      }
+    }
+    
+    PC_SERIAL->println();
+  }
+  
+  
 
   return;
 }
@@ -427,32 +413,27 @@ void neo6mGPS::printPacket(byte *packet, byte len)
 //update lat and lon in the GPS_data array
 void neo6mGPS::grabData_LatLong()
 {
-  byte numLetters = 6;
-  byte Letters_Desired[] = {'$', 'G', 'P', 'G', 'L', 'L'};
-  byte Letters_Actual[numLetters];
-  bool LettersFound = true;
-
   byte buffLen = 64;
   byte buff[buffLen] = {" "};
 
   byte trash = 0;
 
   /* See if GSP data stream started */
-  if(GPS_SERIAL.available())
+  if(GPS_SERIAL->available())
   {
-    while(GPS_SERIAL.available() == 0);
-    trash = GPS_SERIAL.read();
+    while(GPS_SERIAL->available() == 0);
+    trash = GPS_SERIAL->read();
     
     while(trash != 'L')
     {
-      while(GPS_SERIAL.available() == 0);
-      trash = GPS_SERIAL.read(); //trash
+      while(GPS_SERIAL->available() == 0);
+      trash = GPS_SERIAL->read(); //trash
     }
     
     for(int i=0; i<buffLen; i++)
     {
-      while(GPS_SERIAL.available() == 0);
-      trash = GPS_SERIAL.read();
+      while(GPS_SERIAL->available() == 0);
+      trash = GPS_SERIAL->read();
 
       if(trash == '\n')
       {
