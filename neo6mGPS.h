@@ -50,7 +50,7 @@
     
     
     private:
-      //serial stream variables (can be hardware or software serial)
+      //hardware serial stream variables (can be ONLY behardware serial ports)
       HardwareSerial*  PC_SERIAL = 0;
       HardwareSerial*  GPS_SERIAL;
     
