@@ -515,7 +515,7 @@ void neo6mGPS::extractLatLong()
   //increment once past the comma
   i++;
 
-  //grab all lat (if available) data except for the N/S
+  //grab all lat (if available) data except for the E/W
   while((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
   {
     lonBuff[lonIndex] = buff[i] - '0';
@@ -527,7 +527,7 @@ void neo6mGPS::extractLatLong()
   //increment once past the comma
   i++;
 
-  //grab the N/S (if available) char
+  //grab the E/W (if available) char
   while((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
   {
     lonBuff[lonIndex] = buff[i];
