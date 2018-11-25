@@ -17,9 +17,9 @@
                           };
       
       //initialize the GPS data extractor class and the GPS itself (overloaded)
-      void begin(Stream& GPS_SERIAL, Stream& PC_SERIAL, PC_BAUDRATE);
-      void begin(Stream& GPS_SERIAL, Stream& PC_SERIAL);
-      void begin(Stream& GPS_SERIAL);
+      void begin(Stream& _GPS_SERIAL, Stream& _PC_SERIAL, uint32_t _PC_BAUDRATE);
+      void begin(Stream& _GPS_SERIAL, Stream& _PC_SERIAL);
+      void begin(Stream& _GPS_SERIAL);
       
       //update lat and lon in the GPS_data array
       void grabData_LatLong();
