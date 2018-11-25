@@ -1,9 +1,15 @@
 #include "Arduino.h"
 
+
+
+
 #ifndef neo6mGPS_cpp
 
   #define neo6mGPS_cpp
   
+
+
+
   class neo6mGPS
   {
     public:                           
@@ -16,6 +22,9 @@
                             0.0,
                           };
       
+    
+    
+    
       //initialize the GPS data extractor class and the GPS itself (overloaded)
       void begin(Stream& _GPS_SERIAL, Stream& _PC_SERIAL, uint32_t _PC_BAUDRATE);
       void begin(Stream& _GPS_SERIAL, Stream& _PC_SERIAL);
@@ -23,6 +32,9 @@
       
       //update lat and lon in the GPS_data array
       void grabData_LatLong();
+    
+    
+    
     
     private:
       //serial stream variables (can be hardware or software serial)
