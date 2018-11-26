@@ -40,6 +40,7 @@
     
     
       //initialize the GPS data extractor class and the GPS itself (overloaded)
+      void begin(HardwareSerial& _GPS_SERIAL, usb_serialclass& _PC_SERIAL_USB);
       void begin(HardwareSerial& _GPS_SERIAL, HardwareSerial& _PC_SERIAL);
       void begin(HardwareSerial& _GPS_SERIAL);
       
@@ -51,6 +52,7 @@
     
     private:
       //hardware serial stream variables (can be ONLY behardware serial ports)
+      usb_serialclass* PC_SERIAL_USB = 0;
       HardwareSerial*  PC_SERIAL = 0;
       HardwareSerial*  GPS_SERIAL;
     
