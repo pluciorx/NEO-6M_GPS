@@ -472,7 +472,7 @@ void neo6mGPS::printPacket(byte *packet, byte len)
 
 
 //update lat and lon in the GPS_data array
-void neo6mGPS::grabData_LatLong()
+bool neo6mGPS::grabData_LatLong()
 {
   byte trash = 0;
 
@@ -503,8 +503,12 @@ void neo6mGPS::grabData_LatLong()
 
     extractLatLong();
   }
+  else
+  {
+    return false;
+  }
   
-  return;
+  return true;
 }
 
 
