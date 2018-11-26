@@ -4,6 +4,22 @@
 
 
 //initialize the GPS data extractor class and the GPS itself
+void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, usb_serial_class &_PC_SERIAL_USB)
+{
+  //update serial streams
+  GPS_SERIAL = &_GPS_SERIAL;
+  PC_SERIAL_USB = &_PC_SERIAL_USB;
+  
+  //setup GPS
+  setupGPS();
+  
+  return;
+}
+
+
+
+
+//initialize the GPS data extractor class and the GPS itself
 void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, HardwareSerial &_PC_SERIAL)
 {
   //update serial streams
@@ -39,6 +55,8 @@ void neo6mGPS::setupGPS()
 {
   if(PC_SERIAL != 0)
     PC_SERIAL->println("Starting auto-configuration...");
+  else if(PC_SERIAL_USB != 0)
+    PC_SERIAL_USB->println("Starting auto-configuration...");
 
   // Restore the receiver default configuration.
   for (byte i = 0; i < sizeof(possibleBaudrates) / sizeof(*possibleBaudrates); i++)
@@ -48,6 +66,12 @@ void neo6mGPS::setupGPS()
       PC_SERIAL->print("Trying to restore defaults at ");
       PC_SERIAL->print(possibleBaudrates[i]);
       PC_SERIAL->println(" baudrate...");
+    }
+    else if(PC_SERIAL_USB != 0)
+    {
+      PC_SERIAL_USB->print("Trying to restore defaults at ");
+      PC_SERIAL_USB->print(possibleBaudrates[i]);
+      PC_SERIAL_USB->println(" baudrate...");
     }
 
     if (i != 0)
@@ -69,6 +93,12 @@ void neo6mGPS::setupGPS()
       PC_SERIAL->print(GPS_DEFAULT_BAUDRATE);
       PC_SERIAL->println("...");
     }
+    else if(PC_SERIAL_USB != 0)
+    {
+      PC_SERIAL_USB->print("Switching to the default baudrate which is ");
+      PC_SERIAL_USB->print(GPS_DEFAULT_BAUDRATE);
+      PC_SERIAL_USB->println("...");
+    }
 
     delay(100); // Little delay before flushing.
     GPS_SERIAL->flush();
@@ -78,6 +108,8 @@ void neo6mGPS::setupGPS()
   // Disable NMEA messages by sending appropriate packets.
   if(PC_SERIAL != 0)
     PC_SERIAL->println("Disabling NMEA messages...");
+  else if(PC_SERIAL_USB != 0)
+    PC_SERIAL_USB->println("Disabling NMEA messages...");
   disableNmea();
 
   // Switch the receiver serial to the wanted baudrate.
@@ -88,6 +120,12 @@ void neo6mGPS::setupGPS()
       PC_SERIAL->print("Switching receiver to the wanted baudrate which is ");
       PC_SERIAL->print(GPS_WANTED_BAUDRATE);
       PC_SERIAL->println("...");
+    }
+    else if(PC_SERIAL_USB != 0)
+    {
+      PC_SERIAL_USB->print("Switching receiver to the wanted baudrate which is ");
+      PC_SERIAL_USB->print(GPS_WANTED_BAUDRATE);
+      PC_SERIAL_USB->println("...");
     }
 
     changeBaudrate();
@@ -100,20 +138,28 @@ void neo6mGPS::setupGPS()
   // Increase frequency to 100 ms.
   if(PC_SERIAL != 0)
     PC_SERIAL->println("Changing receiving frequency to 100 ms...");
+  else if(PC_SERIAL_USB != 0)
+    PC_SERIAL_USB->println("Changing receiving frequency to 100 ms...");
   changeFrequency();
 
   // Disable unnecessary channels like SBAS or QZSS.
   if(PC_SERIAL != 0)
     PC_SERIAL->println("Disabling unnecessary channels...");
+  else if(PC_SERIAL_USB != 0)
+    PC_SERIAL_USB->println("Disabling unnecessary channels...");
   disableUnnecessaryChannels();
 
   // Enable NAV-PVT messages.
   if(PC_SERIAL != 0)
     PC_SERIAL->println("Enabling NAV-PVT messages...");
+  else if(PC_SERIAL_USB != 0)
+    PC_SERIAL_USB->println("Enabling NAV-PVT messages...");
   enableNavPvt();
 
   if(PC_SERIAL != 0)
     PC_SERIAL->println("Auto-configuration is complete!");
+  else if(PC_SERIAL_USB != 0)
+    PC_SERIAL_USB->println("Auto-configuration is complete!");
 
   delay(100); // Little delay before flushing.
   GPS_SERIAL->flush();
@@ -401,8 +447,23 @@ void neo6mGPS::printPacket(byte *packet, byte len)
     
     PC_SERIAL->println();
   }
-  
-  
+  else if(PC_SERIAL_USB != 0)
+  {
+    PC_SERIAL_USB->print("\t");
+    
+    for (byte i = 0; i < len; i++)
+    {
+      sprintf(temp, "%.2X", packet[i]);
+      PC_SERIAL_USB->print(temp);
+
+      if (i != len - 1)
+      {
+        PC_SERIAL_USB->print(' ');
+      }
+    }
+    
+    PC_SERIAL_USB->println();
+  }
 
   return;
 }
