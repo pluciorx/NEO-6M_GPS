@@ -45,7 +45,7 @@
       void begin(HardwareSerial& _GPS_SERIAL);
       
       //update lat and lon in the GPS_data array
-      void grabData_LatLong();
+      bool grabData_LatLong();
     
     
     
