@@ -7,7 +7,8 @@ void setup()
 {
   //initialize debugging serial
   Serial.begin(115200);
-
+  
+  //wait for PC serial port to come online
   while(!Serial);
 
   //initialize GPS class
