@@ -474,6 +474,7 @@ void neo6mGPS::printPacket(byte *packet, byte len)
 //update lat and lon in the GPS_data array
 bool neo6mGPS::grabData_LatLong()
 {
+  bool returnFlag = false;
   byte trash = 0;
 
   /* See if GSP data stream started */
@@ -502,13 +503,11 @@ bool neo6mGPS::grabData_LatLong()
     }
 
     extractLatLong();
+
+	returnFlag = true;
   }
-  else
-  {
-    return false;
-  }
-  
-  return true;
+    
+  return returnFlag;
 }
 
 
