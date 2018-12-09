@@ -6,14 +6,14 @@
 //initialize the GPS data extractor class and the GPS itself
 void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, usb_serial_class &_PC_SERIAL_USB)
 {
-  //update serial streams
-  GPS_SERIAL = &_GPS_SERIAL;
-  PC_SERIAL_USB = &_PC_SERIAL_USB;
-  
-  //setup GPS
-  setupGPS();
-  
-  return;
+	//update serial streams
+	GPS_SERIAL = &_GPS_SERIAL;
+	PC_SERIAL_USB = &_PC_SERIAL_USB;
+
+	//setup GPS
+	setupGPS();
+
+	return;
 }
 
 
@@ -22,14 +22,14 @@ void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, usb_serial_class &_PC_SERIAL_U
 //initialize the GPS data extractor class and the GPS itself
 void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, HardwareSerial &_PC_SERIAL)
 {
-  //update serial streams
-  GPS_SERIAL = &_GPS_SERIAL;
-  PC_SERIAL = &_PC_SERIAL;
-  
-  //setup GPS
-  setupGPS();
-  
-  return;
+	//update serial streams
+	GPS_SERIAL = &_GPS_SERIAL;
+	PC_SERIAL = &_PC_SERIAL;
+
+	//setup GPS
+	setupGPS();
+
+	return;
 }
 
 
@@ -38,13 +38,24 @@ void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, HardwareSerial &_PC_SERIAL)
 //initialize the GPS data extractor class and the GPS itself
 void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL)
 {
-  //update serial stream
-  GPS_SERIAL = &_GPS_SERIAL;
-  
-  //setup GPS
-  setupGPS();
-  
-  return;
+	//update serial stream
+	GPS_SERIAL = &_GPS_SERIAL;
+
+	//setup GPS
+	setupGPS();
+
+	return;
+}
+
+
+
+
+//change the UART buffer timeout (10ms by default)
+void neo6mGPS::setReceiveTimout(byte _timeout)
+{
+	timeout = _timeout;
+
+	return;
 }
 
 
@@ -53,118 +64,118 @@ void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL)
 //setup GPS and load non-default configuration settings
 void neo6mGPS::setupGPS()
 {
-  if(PC_SERIAL != 0)
-    PC_SERIAL->println("Starting auto-configuration...");
-  else if(PC_SERIAL_USB != 0)
-    PC_SERIAL_USB->println("Starting auto-configuration...");
+	if (PC_SERIAL != 0)
+		PC_SERIAL->println("Starting auto-configuration...");
+	else if (PC_SERIAL_USB != 0)
+		PC_SERIAL_USB->println("Starting auto-configuration...");
 
-  // Restore the receiver default configuration.
-  for (byte i = 0; i < sizeof(possibleBaudrates) / sizeof(*possibleBaudrates); i++)
-  {
-    if(PC_SERIAL != 0)
-    {
-      PC_SERIAL->print("Trying to restore defaults at ");
-      PC_SERIAL->print(possibleBaudrates[i]);
-      PC_SERIAL->println(" baudrate...");
-    }
-    else if(PC_SERIAL_USB != 0)
-    {
-      PC_SERIAL_USB->print("Trying to restore defaults at ");
-      PC_SERIAL_USB->print(possibleBaudrates[i]);
-      PC_SERIAL_USB->println(" baudrate...");
-    }
+	// Restore the receiver default configuration.
+	for (byte i = 0; i < sizeof(possibleBaudrates) / sizeof(*possibleBaudrates); i++)
+	{
+		if (PC_SERIAL != 0)
+		{
+			PC_SERIAL->print("Trying to restore defaults at ");
+			PC_SERIAL->print(possibleBaudrates[i]);
+			PC_SERIAL->println(" baudrate...");
+		}
+		else if (PC_SERIAL_USB != 0)
+		{
+			PC_SERIAL_USB->print("Trying to restore defaults at ");
+			PC_SERIAL_USB->print(possibleBaudrates[i]);
+			PC_SERIAL_USB->println(" baudrate...");
+		}
 
-    if (i != 0)
-    {
-      delay(100); // Little delay before flushing.
-      GPS_SERIAL->flush();
-    }
+		if (i != 0)
+		{
+			delay(100); // Little delay before flushing.
+			GPS_SERIAL->flush();
+		}
 
-    GPS_SERIAL->begin(possibleBaudrates[i]);
-    restoreDefaults();
-  }
+		GPS_SERIAL->begin(possibleBaudrates[i]);
+		restoreDefaults();
+	}
 
-  // Switch the receiver serial to the default baudrate.
-  if (possibleBaudrates[sizeof(possibleBaudrates) / sizeof(*possibleBaudrates) - 1] != GPS_DEFAULT_BAUDRATE)
-  {
-    if(PC_SERIAL != 0)
-    {
-      PC_SERIAL->print("Switching to the default baudrate which is ");
-      PC_SERIAL->print(GPS_DEFAULT_BAUDRATE);
-      PC_SERIAL->println("...");
-    }
-    else if(PC_SERIAL_USB != 0)
-    {
-      PC_SERIAL_USB->print("Switching to the default baudrate which is ");
-      PC_SERIAL_USB->print(GPS_DEFAULT_BAUDRATE);
-      PC_SERIAL_USB->println("...");
-    }
+	// Switch the receiver serial to the default baudrate.
+	if (possibleBaudrates[sizeof(possibleBaudrates) / sizeof(*possibleBaudrates) - 1] != GPS_DEFAULT_BAUDRATE)
+	{
+		if (PC_SERIAL != 0)
+		{
+			PC_SERIAL->print("Switching to the default baudrate which is ");
+			PC_SERIAL->print(GPS_DEFAULT_BAUDRATE);
+			PC_SERIAL->println("...");
+		}
+		else if (PC_SERIAL_USB != 0)
+		{
+			PC_SERIAL_USB->print("Switching to the default baudrate which is ");
+			PC_SERIAL_USB->print(GPS_DEFAULT_BAUDRATE);
+			PC_SERIAL_USB->println("...");
+		}
 
-    delay(100); // Little delay before flushing.
-    GPS_SERIAL->flush();
-    GPS_SERIAL->begin(GPS_DEFAULT_BAUDRATE);
-  }
+		delay(100); // Little delay before flushing.
+		GPS_SERIAL->flush();
+		GPS_SERIAL->begin(GPS_DEFAULT_BAUDRATE);
+	}
 
-  // Disable NMEA messages by sending appropriate packets.
-  if(PC_SERIAL != 0)
-    PC_SERIAL->println("Disabling NMEA messages...");
-  else if(PC_SERIAL_USB != 0)
-    PC_SERIAL_USB->println("Disabling NMEA messages...");
-  disableNmea();
+	// Disable NMEA messages by sending appropriate packets.
+	if (PC_SERIAL != 0)
+		PC_SERIAL->println("Disabling NMEA messages...");
+	else if (PC_SERIAL_USB != 0)
+		PC_SERIAL_USB->println("Disabling NMEA messages...");
+	disableNmea();
 
-  // Switch the receiver serial to the wanted baudrate.
-  if (GPS_WANTED_BAUDRATE != GPS_DEFAULT_BAUDRATE)
-  {
-    if(PC_SERIAL != 0)
-    {
-      PC_SERIAL->print("Switching receiver to the wanted baudrate which is ");
-      PC_SERIAL->print(GPS_WANTED_BAUDRATE);
-      PC_SERIAL->println("...");
-    }
-    else if(PC_SERIAL_USB != 0)
-    {
-      PC_SERIAL_USB->print("Switching receiver to the wanted baudrate which is ");
-      PC_SERIAL_USB->print(GPS_WANTED_BAUDRATE);
-      PC_SERIAL_USB->println("...");
-    }
+	// Switch the receiver serial to the wanted baudrate.
+	if (GPS_WANTED_BAUDRATE != GPS_DEFAULT_BAUDRATE)
+	{
+		if (PC_SERIAL != 0)
+		{
+			PC_SERIAL->print("Switching receiver to the wanted baudrate which is ");
+			PC_SERIAL->print(GPS_WANTED_BAUDRATE);
+			PC_SERIAL->println("...");
+		}
+		else if (PC_SERIAL_USB != 0)
+		{
+			PC_SERIAL_USB->print("Switching receiver to the wanted baudrate which is ");
+			PC_SERIAL_USB->print(GPS_WANTED_BAUDRATE);
+			PC_SERIAL_USB->println("...");
+		}
 
-    changeBaudrate();
+		changeBaudrate();
 
-    delay(100); // Little delay before flushing.
-    GPS_SERIAL->flush();
-    GPS_SERIAL->begin(GPS_WANTED_BAUDRATE);
-  }
+		delay(100); // Little delay before flushing.
+		GPS_SERIAL->flush();
+		GPS_SERIAL->begin(GPS_WANTED_BAUDRATE);
+	}
 
-  // Increase frequency to 100 ms.
-  if(PC_SERIAL != 0)
-    PC_SERIAL->println("Changing receiving frequency to 100 ms...");
-  else if(PC_SERIAL_USB != 0)
-    PC_SERIAL_USB->println("Changing receiving frequency to 100 ms...");
-  changeFrequency();
+	// Increase frequency to 100 ms.
+	if (PC_SERIAL != 0)
+		PC_SERIAL->println("Changing receiving frequency to 100 ms...");
+	else if (PC_SERIAL_USB != 0)
+		PC_SERIAL_USB->println("Changing receiving frequency to 100 ms...");
+	changeFrequency();
 
-  // Disable unnecessary channels like SBAS or QZSS.
-  if(PC_SERIAL != 0)
-    PC_SERIAL->println("Disabling unnecessary channels...");
-  else if(PC_SERIAL_USB != 0)
-    PC_SERIAL_USB->println("Disabling unnecessary channels...");
-  disableUnnecessaryChannels();
+	// Disable unnecessary channels like SBAS or QZSS.
+	if (PC_SERIAL != 0)
+		PC_SERIAL->println("Disabling unnecessary channels...");
+	else if (PC_SERIAL_USB != 0)
+		PC_SERIAL_USB->println("Disabling unnecessary channels...");
+	disableUnnecessaryChannels();
 
-  // Enable NAV-PVT messages.
-  if(PC_SERIAL != 0)
-    PC_SERIAL->println("Enabling NAV-PVT messages...");
-  else if(PC_SERIAL_USB != 0)
-    PC_SERIAL_USB->println("Enabling NAV-PVT messages...");
-  enableNavPvt();
+	// Enable NAV-PVT messages.
+	if (PC_SERIAL != 0)
+		PC_SERIAL->println("Enabling NAV-PVT messages...");
+	else if (PC_SERIAL_USB != 0)
+		PC_SERIAL_USB->println("Enabling NAV-PVT messages...");
+	enableNavPvt();
 
-  if(PC_SERIAL != 0)
-    PC_SERIAL->println("Auto-configuration is complete!");
-  else if(PC_SERIAL_USB != 0)
-    PC_SERIAL_USB->println("Auto-configuration is complete!");
+	if (PC_SERIAL != 0)
+		PC_SERIAL->println("Auto-configuration is complete!");
+	else if (PC_SERIAL_USB != 0)
+		PC_SERIAL_USB->println("Auto-configuration is complete!");
 
-  delay(100); // Little delay before flushing.
-  GPS_SERIAL->flush();
+	delay(100); // Little delay before flushing.
+	GPS_SERIAL->flush();
 
-  return;
+	return;
 }
 
 
@@ -173,34 +184,34 @@ void neo6mGPS::setupGPS()
 //send a packet to the receiver to restore default configuration.
 void neo6mGPS::restoreDefaults()
 {
-  // CFG-CFG packet.
-  byte packet[] = {
-        0xB5, // sync char 1
-        0x62, // sync char 2
-        0x06, // class
-        0x09, // id
-        0x0D, // length
-        0x00, // length
-        0xFF, // payload
-        0xFF, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0xFF, // payload
-        0xFF, // payload
-        0x00, // payload
-        0x00, // payload
-        0x17, // payload
-        0x2F, // CK_A
-        0xAE, // CK_B
-  };
+	// CFG-CFG packet.
+	byte packet[] = {
+		  0xB5, // sync char 1
+		  0x62, // sync char 2
+		  0x06, // class
+		  0x09, // id
+		  0x0D, // length
+		  0x00, // length
+		  0xFF, // payload
+		  0xFF, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0xFF, // payload
+		  0xFF, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x17, // payload
+		  0x2F, // CK_A
+		  0xAE, // CK_B
+	};
 
-  sendPacket(packet, sizeof(packet));
-  
-  return;
+	sendPacket(packet, sizeof(packet));
+
+	return;
 }
 
 
@@ -209,73 +220,73 @@ void neo6mGPS::restoreDefaults()
 //send a set of packets to the receiver to disable NMEA messages.
 void neo6mGPS::disableNmea()
 {
-  // Array of two bytes for CFG-MSG packets payload.
-  byte messages[][2] = {
-        {0xF0, 0x0A},
-        {0xF0, 0x09},
-        {0xF0, 0x00},
-        {0xF0, 0x01},
-        {0xF0, 0x0D},
-        {0xF0, 0x06},
-        {0xF0, 0x02},
-        {0xF0, 0x07},
-        {0xF0, 0x03},
-        {0xF0, 0x04},
-        {0xF0, 0x0E},
-        {0xF0, 0x0F},
-        {0xF0, 0x05},
-        {0xF0, 0x08},
-        {0xF1, 0x00},
-        {0xF1, 0x01},
-        {0xF1, 0x03},
-        {0xF1, 0x04},
-        {0xF1, 0x05},
-        {0xF1, 0x06},
-  };
+	// Array of two bytes for CFG-MSG packets payload.
+	byte messages[][2] = {
+		  {0xF0, 0x0A},
+		  {0xF0, 0x09},
+		  {0xF0, 0x00},
+		  {0xF0, 0x01},
+		  {0xF0, 0x0D},
+		  {0xF0, 0x06},
+		  {0xF0, 0x02},
+		  {0xF0, 0x07},
+		  {0xF0, 0x03},
+		  {0xF0, 0x04},
+		  {0xF0, 0x0E},
+		  {0xF0, 0x0F},
+		  {0xF0, 0x05},
+		  {0xF0, 0x08},
+		  {0xF1, 0x00},
+		  {0xF1, 0x01},
+		  {0xF1, 0x03},
+		  {0xF1, 0x04},
+		  {0xF1, 0x05},
+		  {0xF1, 0x06},
+	};
 
-  // CFG-MSG packet buffer.
-  byte packet[] = {
-        0xB5, // sync char 1
-        0x62, // sync char 2
-        0x06, // class
-        0x01, // id
-        0x03, // length
-        0x00, // length
-        0x00, // payload (first byte from messages array element)
-        0x00, // payload (second byte from messages array element)
-        0x00, // payload (not changed in the case)
-        0x00, // CK_A
-        0x00, // CK_B
-  };
-  byte packetSize = sizeof(packet);
+	// CFG-MSG packet buffer.
+	byte packet[] = {
+		  0xB5, // sync char 1
+		  0x62, // sync char 2
+		  0x06, // class
+		  0x01, // id
+		  0x03, // length
+		  0x00, // length
+		  0x00, // payload (first byte from messages array element)
+		  0x00, // payload (second byte from messages array element)
+		  0x00, // payload (not changed in the case)
+		  0x00, // CK_A
+		  0x00, // CK_B
+	};
+	byte packetSize = sizeof(packet);
 
-  // Offset to the place where payload starts.
-  byte payloadOffset = 6;
+	// Offset to the place where payload starts.
+	byte payloadOffset = 6;
 
-  // Iterate over the messages array.
-  for (byte i = 0; i < sizeof(messages) / sizeof(*messages); i++)
-  {
-    // Copy two bytes of payload to the packet buffer.
-    for (byte j = 0; j < sizeof(*messages); j++)
-    {
-      packet[payloadOffset + j] = messages[i][j];
-    }
+	// Iterate over the messages array.
+	for (byte i = 0; i < sizeof(messages) / sizeof(*messages); i++)
+	{
+		// Copy two bytes of payload to the packet buffer.
+		for (byte j = 0; j < sizeof(*messages); j++)
+		{
+			packet[payloadOffset + j] = messages[i][j];
+		}
 
-    // Set checksum bytes to the null.
-    packet[packetSize - 2] = 0x00;
-    packet[packetSize - 1] = 0x00;
+		// Set checksum bytes to the null.
+		packet[packetSize - 2] = 0x00;
+		packet[packetSize - 1] = 0x00;
 
-    // Calculate checksum over the packet buffer excluding sync (first two) and checksum chars (last two).
-    for (byte j = 0; j < packetSize - 4; j++)
-    {
-      packet[packetSize - 2] += packet[2 + j];
-      packet[packetSize - 1] += packet[packetSize - 2];
-    }
+		// Calculate checksum over the packet buffer excluding sync (first two) and checksum chars (last two).
+		for (byte j = 0; j < packetSize - 4; j++)
+		{
+			packet[packetSize - 2] += packet[2 + j];
+			packet[packetSize - 1] += packet[packetSize - 2];
+		}
 
-    sendPacket(packet, packetSize);
-  }
+		sendPacket(packet, packetSize);
+	}
 
-  return;
+	return;
 }
 
 
@@ -284,41 +295,41 @@ void neo6mGPS::disableNmea()
 //send a packet to the receiver to change baudrate to 115200.
 void neo6mGPS::changeBaudrate()
 {
-  // CFG-PRT packet.
-  byte packet[] = {
-        0xB5, // sync char 1
-        0x62, // sync char 2
-        0x06, // class
-        0x00, // id
-        0x14, // length
-        0x00, // length
-        0x01, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0xD0, // payload
-        0x08, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0xC2, // payload
-        0x01, // payload
-        0x00, // payload
-        0x07, // payload
-        0x00, // payload
-        0x03, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0x00, // payload
-        0xC0, // CK_A
-        0x7E, // CK_B
-  };
+	// CFG-PRT packet.
+	byte packet[] = {
+		  0xB5, // sync char 1
+		  0x62, // sync char 2
+		  0x06, // class
+		  0x00, // id
+		  0x14, // length
+		  0x00, // length
+		  0x01, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0xD0, // payload
+		  0x08, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0xC2, // payload
+		  0x01, // payload
+		  0x00, // payload
+		  0x07, // payload
+		  0x00, // payload
+		  0x03, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0x00, // payload
+		  0xC0, // CK_A
+		  0x7E, // CK_B
+	};
 
-  sendPacket(packet, sizeof(packet));
+	sendPacket(packet, sizeof(packet));
 
-  return;
+	return;
 }
 
 
@@ -327,27 +338,27 @@ void neo6mGPS::changeBaudrate()
 //send a packet to the receiver to change frequency to 100 ms.
 void neo6mGPS::changeFrequency()
 {
-  // CFG-RATE packet.
-  byte packet[] = {
-        0xB5, // sync char 1
-        0x62, // sync char 2
-        0x06, // class
-        0x08, // id
-        0x06, // length
-        0x00, // length
-        0x64, // payload
-        0x00, // payload
-        0x01, // payload
-        0x00, // payload
-        0x01, // payload
-        0x00, // payload
-        0x7A, // CK_A
-        0x12, // CK_B
-  };
+	// CFG-RATE packet.
+	byte packet[] = {
+		  0xB5, // sync char 1
+		  0x62, // sync char 2
+		  0x06, // class
+		  0x08, // id
+		  0x06, // length
+		  0x00, // length
+		  0x64, // payload
+		  0x00, // payload
+		  0x01, // payload
+		  0x00, // payload
+		  0x01, // payload
+		  0x00, // payload
+		  0x7A, // CK_A
+		  0x12, // CK_B
+	};
 
-  sendPacket(packet, sizeof(packet));
+	sendPacket(packet, sizeof(packet));
 
-  return;
+	return;
 }
 
 
@@ -356,28 +367,28 @@ void neo6mGPS::changeFrequency()
 //send a packet to the receiver to disable unnecessary channels.
 void neo6mGPS::disableUnnecessaryChannels()
 {
-  // CFG-GNSS packet.
-  byte packet[] = {
-        0xB5, // sync char 1
-        0x62, // sync char 2
-        0x06, // class
-        0x3E, // id
-        0x24, // length
-        0x00, // length
+	// CFG-GNSS packet.
+	byte packet[] = {
+		  0xB5, // sync char 1
+		  0x62, // sync char 2
+		  0x06, // class
+		  0x3E, // id
+		  0x24, // length
+		  0x00, // length
 
-        0x00, 0x00, 0x16, 0x04, 0x00, 0x04, 0xFF, 0x00, // payload
-        0x01, 0x00, 0x00, 0x01, 0x01, 0x01, 0x03, 0x00, // payload
-        0x00, 0x00, 0x00, 0x01, 0x05, 0x00, 0x03, 0x00, // payload
-        0x00, 0x00, 0x00, 0x01, 0x06, 0x08, 0xFF, 0x00, // payload
-        0x00, 0x00, 0x00, 0x01,                         // payload
+		  0x00, 0x00, 0x16, 0x04, 0x00, 0x04, 0xFF, 0x00, // payload
+		  0x01, 0x00, 0x00, 0x01, 0x01, 0x01, 0x03, 0x00, // payload
+		  0x00, 0x00, 0x00, 0x01, 0x05, 0x00, 0x03, 0x00, // payload
+		  0x00, 0x00, 0x00, 0x01, 0x06, 0x08, 0xFF, 0x00, // payload
+		  0x00, 0x00, 0x00, 0x01,                         // payload
 
-        0xA4, // CK_A
-        0x25, // CK_B
-  };
+		  0xA4, // CK_A
+		  0x25, // CK_B
+	};
 
-  sendPacket(packet, sizeof(packet));
+	sendPacket(packet, sizeof(packet));
 
-  return;
+	return;
 }
 
 
@@ -386,24 +397,24 @@ void neo6mGPS::disableUnnecessaryChannels()
 //send a packet to the receiver to enable NAV-PVT messages.
 void neo6mGPS::enableNavPvt()
 {
-  // CFG-MSG packet.
-  byte packet[] = {
-        0xB5, // sync char 1
-        0x62, // sync char 2
-        0x06, // class
-        0x01, // id
-        0x03, // length
-        0x00, // length
-        0x01, // payload
-        0x07, // payload
-        0x01, // payload
-        0x13, // CK_A
-        0x51, // CK_B
-  };
+	// CFG-MSG packet.
+	byte packet[] = {
+		  0xB5, // sync char 1
+		  0x62, // sync char 2
+		  0x06, // class
+		  0x01, // id
+		  0x03, // length
+		  0x00, // length
+		  0x01, // payload
+		  0x07, // payload
+		  0x01, // payload
+		  0x13, // CK_A
+		  0x51, // CK_B
+	};
 
-  sendPacket(packet, sizeof(packet));
+	sendPacket(packet, sizeof(packet));
 
-  return;
+	return;
 }
 
 
@@ -412,14 +423,14 @@ void neo6mGPS::enableNavPvt()
 //send the packet specified to the receiver.
 void neo6mGPS::sendPacket(byte *packet, byte len)
 {
-  for (byte i = 0; i < len; i++)
-  {
-    GPS_SERIAL->write(packet[i]);
-  }
+	for (byte i = 0; i < len; i++)
+	{
+		GPS_SERIAL->write(packet[i]);
+	}
 
-  printPacket(packet, len);
+	printPacket(packet, len);
 
-  return;
+	return;
 }
 
 
@@ -428,44 +439,44 @@ void neo6mGPS::sendPacket(byte *packet, byte len)
 //print the packet specified to the PC serial in a hexadecimal form.
 void neo6mGPS::printPacket(byte *packet, byte len)
 {
-  char temp[3];
-  
-  if(PC_SERIAL != 0)
-  {
-    PC_SERIAL->print("\t");
-    
-    for (byte i = 0; i < len; i++)
-    {
-      sprintf(temp, "%.2X", packet[i]);
-      PC_SERIAL->print(temp);
+	char temp[3];
 
-      if (i != len - 1)
-      {
-        PC_SERIAL->print(' ');
-      }
-    }
-    
-    PC_SERIAL->println();
-  }
-  else if(PC_SERIAL_USB != 0)
-  {
-    PC_SERIAL_USB->print("\t");
-    
-    for (byte i = 0; i < len; i++)
-    {
-      sprintf(temp, "%.2X", packet[i]);
-      PC_SERIAL_USB->print(temp);
+	if (PC_SERIAL != 0)
+	{
+		PC_SERIAL->print("\t");
 
-      if (i != len - 1)
-      {
-        PC_SERIAL_USB->print(' ');
-      }
-    }
-    
-    PC_SERIAL_USB->println();
-  }
+		for (byte i = 0; i < len; i++)
+		{
+			sprintf(temp, "%.2X", packet[i]);
+			PC_SERIAL->print(temp);
 
-  return;
+			if (i != len - 1)
+			{
+				PC_SERIAL->print(' ');
+			}
+		}
+
+		PC_SERIAL->println();
+	}
+	else if (PC_SERIAL_USB != 0)
+	{
+		PC_SERIAL_USB->print("\t");
+
+		for (byte i = 0; i < len; i++)
+		{
+			sprintf(temp, "%.2X", packet[i]);
+			PC_SERIAL_USB->print(temp);
+
+			if (i != len - 1)
+			{
+				PC_SERIAL_USB->print(' ');
+			}
+		}
+
+		PC_SERIAL_USB->println();
+	}
+
+	return;
 }
 
 
@@ -474,40 +485,67 @@ void neo6mGPS::printPacket(byte *packet, byte len)
 //update lat and lon in the GPS_data array
 bool neo6mGPS::grabData_LatLong()
 {
-  bool returnFlag = false;
-  byte trash = 0;
+	uint32_t startTime = 0;
+	uint32_t endTime = 0;
+	bool returnFlag = false;
+	byte trash = 0;
 
-  /* See if GSP data stream started */
-  if(GPS_SERIAL->available())
-  {
-    while(GPS_SERIAL->available() == 0);
-    trash = GPS_SERIAL->read();
-    
-    while(trash != 'L')
-    {
-      while(GPS_SERIAL->available() == 0);
-      trash = GPS_SERIAL->read(); //trash
-    }
-    
-    for(int i=0; i<buffLen; i++)
-    {
-      while(GPS_SERIAL->available() == 0);
-      trash = GPS_SERIAL->read();
+	//prime the timeout timer
+	startTime = millis();
+	endTime = millis();
 
-      if(trash == '\n')
-      {
-        break;
-      }
-      
-      buff[i] = trash;
-    }
+	/* See if GSP data stream started */
+	if (GPS_SERIAL->available())
+	{
+		while (GPS_SERIAL->available() == 0)
+		{
+			endTime = millis();
 
-    extractLatLong();
+			//test for timeout
+			if ((endTime - startTime) >= timeout)
+			{
+				//oops, data didn't arrive on time - better get back to processing other things
+				return false;
+			}
+		}
 
-	returnFlag = true;
-  }
-    
-  return returnFlag;
+		//find an 'L' char
+		while (GPS_SERIAL->read() != 'L')
+		{
+			//wait for a byte
+			while (GPS_SERIAL->available() == 0);
+		}
+
+		//stuff everything into a buffer
+		for (int i = 0; i < buffLen; i++)
+		{
+			while (GPS_SERIAL->available() == 0)
+			{
+				endTime = millis();
+
+				//test for timeout
+				if ((endTime - startTime) >= timeout)
+				{
+					//oops, data didn't arrive on time - better get back to processing other things
+					return false;
+				}
+			}
+			trash = GPS_SERIAL->read();
+
+			if (trash == '\n')
+			{
+				break;
+			}
+
+			buff[i] = trash;
+		}
+
+		extractLatLong();
+
+		returnFlag = true;
+	}
+
+	return returnFlag;
 }
 
 
@@ -516,93 +554,93 @@ bool neo6mGPS::grabData_LatLong()
 //extract lat and lon data from the GPS stream buffer
 void neo6mGPS::extractLatLong()
 {
-  byte i = 0;
+	byte i = 0;
 
-  byte latLonLen = 12;
-  byte latBuff[latLonLen] = {' '};
-  byte latIndex = 1; //start at 1 instead of 0 since lat only has 11 values
-  byte lonBuff[latLonLen] = {' '};
-  byte lonIndex = 0;
-  
-  //find first comma
-  while((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
-  {
-    i++;
-  }
+	byte latLonLen = 12;
+	byte latBuff[latLonLen] = { ' ' };
+	byte latIndex = 1; //start at 1 instead of 0 since lat only has 11 values
+	byte lonBuff[latLonLen] = { ' ' };
+	byte lonIndex = 0;
 
-  //increment once past the comma
-  i++;
+	//find first comma
+	while ((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
+	{
+		i++;
+	}
 
-  //grab all lat (if available) data except for the N/S
-  while((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
-  {
-    latBuff[latIndex] = buff[i] - '0';
-    
-    latIndex++;
-    i++;
-  }
+	//increment once past the comma
+	i++;
 
-  //increment once past the comma
-  i++;
+	//grab all lat (if available) data except for the N/S
+	while ((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
+	{
+		latBuff[latIndex] = buff[i] - '0';
 
-  //grab the N/S (if available) char
-  while((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
-  {
-    latBuff[latIndex] = buff[i];
-    
-    latIndex++;
-    i++;
-  }
+		latIndex++;
+		i++;
+	}
 
-  //increment once past the comma
-  i++;
+	//increment once past the comma
+	i++;
 
-  //grab all lat (if available) data except for the E/W
-  while((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
-  {
-    lonBuff[lonIndex] = buff[i] - '0';
-    
-    lonIndex++;
-    i++;
-  }
+	//grab the N/S (if available) char
+	while ((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
+	{
+		latBuff[latIndex] = buff[i];
 
-  //increment once past the comma
-  i++;
+		latIndex++;
+		i++;
+	}
 
-  //grab the E/W (if available) char
-  while((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
-  {
-    lonBuff[lonIndex] = buff[i];
-    
-    lonIndex++;
-    i++;
-  }
+	//increment once past the comma
+	i++;
 
-  if((latBuff[1] != ' ') && (lonBuff[0] != ' '))
-  {
-    convertLatLong(latBuff, lonBuff);
-  }
+	//grab all lat (if available) data except for the E/W
+	while ((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
+	{
+		lonBuff[lonIndex] = buff[i] - '0';
 
-  return;
+		lonIndex++;
+		i++;
+	}
+
+	//increment once past the comma
+	i++;
+
+	//grab the E/W (if available) char
+	while ((buff[i] != ',') && (i < buffLen) && (lonIndex < latLonLen))
+	{
+		lonBuff[lonIndex] = buff[i];
+
+		lonIndex++;
+		i++;
+	}
+
+	if ((latBuff[1] != ' ') && (lonBuff[0] != ' '))
+	{
+		convertLatLong(latBuff, lonBuff);
+	}
+
+	return;
 }
 
 
 //convert from minutes seconds to degrees
 void neo6mGPS::convertLatLong(byte latBuff[], byte lonBuff[])
 {
-  GPS_data[LAT_POS] = ((latBuff[1]*10) + latBuff[2]) + ((latBuff[3]*10) + latBuff[4])/60.0 + ((latBuff[6]*10) + latBuff[7] + (latBuff[8]/10.0) + (latBuff[9]/100.0) + (latBuff[10]/1000.0))/3600.0;
-  if(latBuff[11] == 'S')
-  {
-    GPS_data[LAT_POS] = -GPS_data[LAT_POS];
-  }
+	GPS_data[LAT_POS] = ((latBuff[1] * 10) + latBuff[2]) + ((latBuff[3] * 10) + latBuff[4]) / 60.0 + ((latBuff[6] * 10) + latBuff[7] + (latBuff[8] / 10.0) + (latBuff[9] / 100.0) + (latBuff[10] / 1000.0)) / 3600.0;
+	if (latBuff[11] == 'S')
+	{
+		GPS_data[LAT_POS] = -GPS_data[LAT_POS];
+	}
 
-  GPS_data[LON_POS] = ((lonBuff[0]*100) + (lonBuff[1]*10) + lonBuff[2]) + ((lonBuff[3]*10) + lonBuff[4])/60.0 + ((lonBuff[6]*10) + lonBuff[7] + (lonBuff[8]/10.0) + (lonBuff[9]/100.0) + (lonBuff[10]/1000.0))/3600.0;
-  if(lonBuff[11] == 'W')
-  {
-    GPS_data[LON_POS] = -GPS_data[LON_POS];
-  }
+	GPS_data[LON_POS] = ((lonBuff[0] * 100) + (lonBuff[1] * 10) + lonBuff[2]) + ((lonBuff[3] * 10) + lonBuff[4]) / 60.0 + ((lonBuff[6] * 10) + lonBuff[7] + (lonBuff[8] / 10.0) + (lonBuff[9] / 100.0) + (lonBuff[10] / 1000.0)) / 3600.0;
+	if (lonBuff[11] == 'W')
+	{
+		GPS_data[LON_POS] = -GPS_data[LON_POS];
+	}
 
-  return;
+	return;
 }
 
 
