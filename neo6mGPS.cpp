@@ -497,23 +497,21 @@ bool neo6mGPS::grabData_LatLong()
 	/* See if GSP data stream started */
 	if (GPS_SERIAL->available())
 	{
-		while (GPS_SERIAL->available() == 0)
-		{
-			endTime = millis();
-
-			//test for timeout
-			if ((endTime - startTime) >= timeout)
-			{
-				//oops, data didn't arrive on time - better get back to processing other things
-				return false;
-			}
-		}
-
 		//find an 'L' char
 		while (GPS_SERIAL->read() != 'L')
 		{
 			//wait for a byte
-			while (GPS_SERIAL->available() == 0);
+			while (GPS_SERIAL->available() == 0)
+			{
+				endTime = millis();
+
+				//test for timeout
+				if ((endTime - startTime) >= timeout)
+				{
+					//oops, data didn't arrive on time - better get back to processing other things
+					return false;
+				}
+			}
 		}
 
 		//stuff everything into a buffer
