@@ -3,13 +3,13 @@
 
 void setup()
 {
-  Serial.begin(115200);
-  while (!Serial);
+  	Serial.begin(115200);
+  	while (!Serial);
 
-  Serial3.begin(9600);
+  	Serial3.begin(9600);
 
-  //initialize GPS class
-  myGPS.begin(Serial3, Serial);
+  	//initialize GPS class
+  	myGPS.begin(Serial3, Serial);
 }
 
 
@@ -17,9 +17,9 @@ void setup()
 
 void loop()
 {
-  myGPS.grabData_LatLong();
+  	myGPS.grabData_LatLong();
   
-  //debugging prints
+  	//debugging prints
 	Serial.print("UTC HOUR: "); Serial.println(myGPS.GPS_data[UTC_HOUR_POS]);
 	Serial.print("UTC MIN: "); Serial.println(myGPS.GPS_data[UTC_MINUTE_POS]);
 	Serial.print("UTC SEC: "); Serial.println(myGPS.GPS_data[UTC_SECOND_POS]);
