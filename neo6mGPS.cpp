@@ -349,7 +349,7 @@ int neo6mGPS::grabData_LatLong()
 
 		if (buffIndex == 3)
 		{
-			Serial.println(inputString);
+			//Serial.println(inputString);
 
 			returnVal = extractLatLong(buffIndex);
 		}
@@ -415,11 +415,11 @@ int neo6mGPS::extractLatLong(byte startingIndex)
 		}
 
 		//debugging prints
-		Serial.print("UTC HOUR: "); Serial.println(GPS_data[UTC_HOUR_POS]);
+		/*Serial.print("UTC HOUR: "); Serial.println(GPS_data[UTC_HOUR_POS]);
 		Serial.print("UTC MIN: "); Serial.println(GPS_data[UTC_MINUTE_POS]);
 		Serial.print("UTC SEC: "); Serial.println(GPS_data[UTC_SECOND_POS]);
 		Serial.print("LAT (dd): "); Serial.println(GPS_data[LAT_POS], 10);
-		Serial.print("LON (dd): "); Serial.println(GPS_data[LON_POS], 10);
+		Serial.print("LON (dd): "); Serial.println(GPS_data[LON_POS], 10);*/
 
 		return NEW_DATA;
 	}
