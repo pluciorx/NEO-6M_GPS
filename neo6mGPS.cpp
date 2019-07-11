@@ -3,445 +3,323 @@
 
 
 
-//create GPS class
-neo6mGPS myGPS;
-
-
-
-
-//initialize the GPS data extractor class and the GPS itself
-void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, usb_serial_class &_PC_SERIAL_USB)
+void neo6mGPS::begin(HardwareSerial &port)
 {
-	// reserve 75 bytes for the inputString:
-	inputString.reserve(75);
+	_port = &port;
+	_port->begin(9600);
 
-	//update serial streams
-	GPS_SERIAL = &_GPS_SERIAL;
-	PC_SERIAL_USB = &_PC_SERIAL_USB;
-
-	//setup GPS
-	setupGPS();
-
-	return;
+	setupGPS(115200, 10);
 }
 
 
 
 
-//initialize the GPS data extractor class and the GPS itself
-void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL, HardwareSerial &_PC_SERIAL)
+void neo6mGPS::begin(usb_serial_class &port)
 {
-	// reserve 75 bytes for the inputString:
-	inputString.reserve(75);
+	usingUSB = true;
+	usb_port = &port;
+	usb_port->begin(9600);
 
-	//update serial streams
-	GPS_SERIAL = &_GPS_SERIAL;
-	PC_SERIAL = &_PC_SERIAL;
-
-	//setup GPS
-	setupGPS();
-
-	return;
+	setupGPS(115200, 10);
 }
 
 
 
 
-//initialize the GPS data extractor class and the GPS itself
-void neo6mGPS::begin(HardwareSerial &_GPS_SERIAL)
+void neo6mGPS::begin(HardwareSerial &port, uint32_t baud, uint16_t hertz)
 {
-	// reserve 75 bytes for the inputString:
-	inputString.reserve(75);
+	_port = &port;
+	_port->begin(9600);
 
-	//update serial stream
-	GPS_SERIAL = &_GPS_SERIAL;
-
-	//setup GPS
-	setupGPS();
-
-	return;
+	setupGPS(baud, hertz);
 }
 
 
 
 
-//https://www.arduino.cc/en/Tutorial/SerialEvent
-void serialEvent1()
+void neo6mGPS::begin(usb_serial_class &port, uint32_t baud, uint16_t hertz)
 {
-	if (myGPS.GPS_SERIAL == &Serial1)
-	{
-		while (Serial1.available())
-		{
-			// get the new byte:
-			char inChar = (char)Serial1.read();
+	usingUSB = true;
+	usb_port = &port;
+	usb_port->begin(9600);
 
-			// add it to the inputString:
-			if (!myGPS.stringComplete)
-				myGPS.inputString += inChar;
-
-			// if the incoming character is a newline, set a flag so the main loop can
-			// do something about it:
-			if (inChar == '\n')
-			{
-				myGPS.stringComplete = true;
-			}
-		}
-	}
-
-	return;
-}
-
-//https://www.arduino.cc/en/Tutorial/SerialEvent
-void serialEvent2()
-{
-	if (myGPS.GPS_SERIAL == &Serial2)
-	{
-		while (Serial2.available())
-		{
-			// get the new byte:
-			char inChar = (char)Serial2.read();
-
-			// add it to the inputString:
-			if (!myGPS.stringComplete)
-				myGPS.inputString += inChar;
-
-			// if the incoming character is a newline, set a flag so the main loop can
-			// do something about it:
-			if (inChar == '\n')
-			{
-				myGPS.stringComplete = true;
-			}
-		}
-	}
-
-	return;
-}
-
-//https://www.arduino.cc/en/Tutorial/SerialEvent
-void serialEvent3()
-{
-	if (myGPS.GPS_SERIAL == &Serial3)
-	{
-		while (Serial3.available())
-		{
-			// get the new byte:
-			char inChar = (char)Serial3.read();
-
-			// add it to the inputString:
-			if(!myGPS.stringComplete)
-				myGPS.inputString += inChar;
-
-			//Serial.write(inChar);
-
-			// if the incoming character is a newline, set a flag so the main loop can
-			// do something about it:
-			if (inChar == '\n')
-			{
-				myGPS.stringComplete = true;
-			}
-		}
-	}
-
-	return;
-}
-
-//https://www.arduino.cc/en/Tutorial/SerialEvent
-void serialEvent4()
-{
-	if (myGPS.GPS_SERIAL == &Serial4)
-	{
-		while (Serial4.available())
-		{
-			// get the new byte:
-			char inChar = (char)Serial4.read();
-
-			// add it to the inputString:
-			if (!myGPS.stringComplete)
-				myGPS.inputString += inChar;
-
-			// if the incoming character is a newline, set a flag so the main loop can
-			// do something about it:
-			if (inChar == '\n')
-			{
-				myGPS.stringComplete = true;
-			}
-		}
-	}
-
-	return;
-}
-
-//https://www.arduino.cc/en/Tutorial/SerialEvent
-void serialEvent5()
-{
-	if (myGPS.GPS_SERIAL == &Serial5)
-	{
-		while (Serial5.available())
-		{
-			// get the new byte:
-			char inChar = (char)Serial5.read();
-
-			// add it to the inputString:
-			if (!myGPS.stringComplete)
-				myGPS.inputString += inChar;
-
-			// if the incoming character is a newline, set a flag so the main loop can
-			// do something about it:
-			if (inChar == '\n')
-			{
-				myGPS.stringComplete = true;
-			}
-		}
-	}
-
-	return;
-}
-
-//https://www.arduino.cc/en/Tutorial/SerialEvent
-void serialEvent6()
-{
-	if (myGPS.GPS_SERIAL == &Serial6)
-	{
-		while (Serial6.available())
-		{
-			// get the new byte:
-			char inChar = (char)Serial6.read();
-
-			// add it to the inputString:
-			if (!myGPS.stringComplete)
-				myGPS.inputString += inChar;
-
-			// if the incoming character is a newline, set a flag so the main loop can
-			// do something about it:
-			if (inChar == '\n')
-			{
-				myGPS.stringComplete = true;
-			}
-		}
-	}
-	
-	return;
+	setupGPS(baud, hertz);
 }
 
 
 
 
 //setup GPS and load non-default configuration settings
-void neo6mGPS::setupGPS()
+void neo6mGPS::setupGPS(uint32_t baud, uint16_t hertz)
 {
-	if (PC_SERIAL != 0)
-		PC_SERIAL->println("Starting NEO-6M GPS auto-configuration...");
-	else if (PC_SERIAL_USB != 0)
-		PC_SERIAL_USB->println("Starting NEO-6M GPS auto-configuration...");
-	
-	// Disable NMEA messages by sending appropriate packets.
-	disableNmea();
-
-	// Enable NMEA messages by sending appropriate packets.
-	enableNmea();
-
-	// Increase frequency to 100 ms.
-	changeFrequency();
-
-	// Switch the receiver serial to the wanted baudrate.
-	changeBaudrate();
-
-	if (PC_SERIAL != 0)
-		PC_SERIAL->println("Finished NEO-6M GPS auto-configuration!");
-	else if (PC_SERIAL_USB != 0)
-		PC_SERIAL_USB->println("Finished NEO-6M GPS auto-configuration!");
-
-	return;
+	disableAllNmea();
+	enableSelectedNmea();
+	changeBaud(baud);
+	changeFreq(hertz);
 }
 
 
 
 
-//send a set of packets to the receiver to disable NMEA messages.
-void neo6mGPS::disableNmea()
+//send a set of packets to the receiver to disable NMEA messages
+void neo6mGPS::disableAllNmea()
 {
-	if (PC_SERIAL != 0)
-		PC_SERIAL->println("\tTurning off all NMEA sentences...");
-	else if (PC_SERIAL_USB != 0)
-		PC_SERIAL_USB->println("\tTurning off all NMEA sentences...");
-
-	writeConfigPacket(turn_Off_GPGGA, NMEA_LEN);
-	writeConfigPacket(turn_Off_GPGLL, NMEA_LEN);
-	writeConfigPacket(turn_Off_GPGSA, NMEA_LEN);
-	writeConfigPacket(turn_Off_GPGLV, NMEA_LEN);
-	writeConfigPacket(turn_Off_GPRMC, NMEA_LEN);
-	writeConfigPacket(turn_Off_GPVTG, NMEA_LEN);
-
-	return;
+	setSentence(GPGGA, false);
+	setSentence(GPGLL, false);
+	setSentence(GPGLV, false);
+	setSentence(GPGSA, false);
+	setSentence(GPRMC, false);
+	setSentence(GPVTG, false);
 }
 
 
 
 
-//send a set of packets to the receiver to enable NMEA messages.
-void neo6mGPS::enableNmea()
+//send a set of packets to the receiver to enable NMEA messages
+void neo6mGPS::enableAllNmea()
 {
-	if (PC_SERIAL != 0)
-		PC_SERIAL->println("\tTurning on desired NMEA sentences...");
-	else if (PC_SERIAL_USB != 0)
-		PC_SERIAL_USB->println("\tTurning on desired NMEA sentences...");
+	setSentence(GPGGA, true);
+	setSentence(GPGLL, true);
+	setSentence(GPGSA, true);
+	setSentence(GPGLV, true);
+	setSentence(GPRMC, true);
+	setSentence(GPVTG, true);
+}
 
+
+
+
+//send a set of packets to the receiver to enable NMEA messages
+void neo6mGPS::enableSelectedNmea()
+{
 	//comment or uncomment based on what sentences desired
 
-	//writeConfigPacket(turn_On_GPGGA, NMEA_LEN);
-	//writeConfigPacket(turn_On_GPGLL, NMEA_LEN);
-	//writeConfigPacket(turn_On_GPGSA, NMEA_LEN);
-	//writeConfigPacket(turn_On_GPGLV, NMEA_LEN);
-	writeConfigPacket(turn_On_GPRMC, NMEA_LEN);
-	//writeConfigPacket(turn_On_GPVTG, NMEA_LEN);
-
-	return;
+	//setSentence(GPGGA, true);
+	//setSentence(GPGLL, true);
+	//setSentence(GPGSA, true);
+	//setSentence(GPGLV, true);
+	setSentence(GPRMC, true);
+	//setSentence(GPVTG, true);
 }
 
 
 
 
-//send a packet to the receiver to change baudrate to 115200.
-void neo6mGPS::changeBaudrate()
+//send a packet to the receiver to change baudrate
+void neo6mGPS::changeBaud(uint32_t baud)
 {
-	if (PC_SERIAL != 0)
-		PC_SERIAL->println("\tChanging baud rate...");
-	else if (PC_SERIAL_USB != 0)
-		PC_SERIAL_USB->println("\tChanging baud rate...");
+	char configPacket[BAUD_LEN];
+	memcpy(configPacket, CFG_PRT, BAUD_LEN);
 
-	writeConfigPacket(changeBaud, BAUD_LEN);
+	configPacket[BAUD_0] = (char)(baud & 0xFF);
+	configPacket[BAUD_1] = (char)((baud >> 8) & 0xFF);
+	configPacket[BAUD_2] = (char)((baud >> 16) & 0xFF);
+	configPacket[BAUD_3] = (char)((baud >> 24) & 0xFF);
 
-	delay(100); // Little delay before flushing.
-	GPS_SERIAL->flush();
-	GPS_SERIAL->begin(115200); //reset serial port to new baud
+	insertChecksum(configPacket, BAUD_LEN);
+	sendPacket(configPacket, BAUD_LEN);
 
-	return;
-}
+	delay(100);
 
-
-
-
-//send a packet to the receiver to change frequency to 100 ms.
-void neo6mGPS::changeFrequency()
-{
-	if (PC_SERIAL != 0)
-		PC_SERIAL->println("\tUpdating refresh frequency...");
-	else if (PC_SERIAL_USB != 0)
-		PC_SERIAL_USB->println("\tUpdating refresh frequency...");
-
-	writeConfigPacket(updateFreq, FREQ_LEN);
-
-	return;
-}
-
-
-
-
-//update lat and lon in the GPS_data array
-int neo6mGPS::grabData_LatLong()
-{
-	int returnVal = NO_DATA;
-
-	// print the string when a newline arrives:
-	if (stringComplete)
+	if (usingUSB)
 	{
-		buffIndex = inputString.indexOf("RMC");
-
-		if (buffIndex == 3)
-		{
-			//Serial.println(inputString);
-
-			returnVal = extractLatLong(buffIndex);
-		}
-
-		// clear the string:
-		inputString = "";
-		stringComplete = false;
-	}
-
-	//nothing found
-	return returnVal;
-}
-
-
-//																			  00000000001111111111222222222233333333334444444444555555555566666666667
-//																			  01234567890123456789012345678901234567890123456789012345678901234567890
-//extract lat and lon data from the GPS stream buffer (Example NMEA Sentence: $GPRMC,083559.00,A,4717.11437,N,00833.91522,E,0.004,77.52,091202,,,A*57)
-int neo6mGPS::extractLatLong(byte startingIndex)
-{
-	if (inputString[startingIndex + 14] == 'A')
-	{
-		GPS_data[UTC_HOUR_POS] = ((inputString[startingIndex + 4] - '0') * 10) + (inputString[startingIndex + 5] - '0');
-
-		GPS_data[UTC_MINUTE_POS] = ((inputString[startingIndex + 6] - '0') * 10) + (inputString[startingIndex + 7] - '0');
-
-		GPS_data[UTC_SECOND_POS] = ((inputString[startingIndex + 8] - '0') * 10) + (inputString[startingIndex + 9] - '0') + ((inputString[startingIndex + 11] - '0') / 10) + ((inputString[startingIndex + 12] - '0') / 100);
-
-		GPS_data[LAT_POS] = (((inputString[startingIndex + 16] - '0') * 10) + (inputString[startingIndex + 17] - '0'))																																											//degrees
-						  + ((((inputString[startingIndex + 18] - '0') * 10) + (inputString[startingIndex + 19] - '0')) / 60.0)																																									//minutes
-						  + ((((inputString[startingIndex + 20] - '0') * 10) + (inputString[startingIndex + 21] - '0') + ((inputString[startingIndex + 23] - '0') / 10.0) + ((inputString[startingIndex + 24] - '0') / 100.0) + ((inputString[startingIndex + 25] - '0') / 1000.0)) / 3600.0);	//seconds
-	
-		GPS_data[LON_POS] = (((inputString[startingIndex + 29] - '0') * 100) + ((inputString[startingIndex + 30] - '0') * 10) + (inputString[startingIndex + 31] - '0'))																														//degrees
-						  + ((((inputString[startingIndex + 32] - '0') * 10) + (inputString[startingIndex + 33] - '0')) / 60.0)																																									//minutes
-						  + ((((inputString[startingIndex + 35] - '0') * 10) + (inputString[startingIndex + 36] - '0') + ((inputString[startingIndex + 37] - '0') / 10.0) + ((inputString[startingIndex + 38] - '0') / 100.0) + ((inputString[startingIndex + 39] - '0') / 1000.0)) / 3600.0);	//seconds
-
-		if (inputString[startingIndex + 27] == 'S')
-		{
-			GPS_data[LAT_POS] = -GPS_data[LAT_POS];
-		}
-
-		if (inputString[startingIndex + 41] == 'W')
-		{
-			GPS_data[LON_POS] = -GPS_data[LON_POS];
-		}
-
-		if (inputString[startingIndex + 43] != ',')
-		{
-			GPS_data[SPD_POS] = (inputString[startingIndex + 43] - '0') + ((inputString[startingIndex + 45] - '0') / 10) + ((inputString[startingIndex + 46] - '0') / 100) + ((inputString[startingIndex + 47] - '0') / 1000);
-			
-			if (inputString[startingIndex + 49] != ',')
-			{
-				//TO DO
-				//GPS_data[COG_POS] = (inputString[startingIndex + 49] - '0')
-			}
-		}
-		else if (inputString[startingIndex + 47] != ',')
-		{
-			//TO DO
-		}
-		else
-		{
-			//TO DO
-		}
-
-		//debugging prints
-		/*Serial.print("UTC HOUR: "); Serial.println(GPS_data[UTC_HOUR_POS]);
-		Serial.print("UTC MIN: "); Serial.println(GPS_data[UTC_MINUTE_POS]);
-		Serial.print("UTC SEC: "); Serial.println(GPS_data[UTC_SECOND_POS]);
-		Serial.print("LAT (dd): "); Serial.println(GPS_data[LAT_POS], 10);
-		Serial.print("LON (dd): "); Serial.println(GPS_data[LON_POS], 10);*/
-
-		return NEW_DATA;
+		usb_port->flush();
+		usb_port->begin(baud);
 	}
 	else
 	{
-		return NO_DATA;
+		_port->flush();
+		_port->begin(baud);
 	}
 }
 
 
 
 
-//send the packet specified to the receiver.
-void neo6mGPS::writeConfigPacket(byte packet[], byte len)
+//send a packet to the receiver to change frequency
+void neo6mGPS::changeFreq(uint16_t hertz)
 {
-	for (byte i = 0; i < len; i++)
-	{
-		GPS_SERIAL->write(packet[i]);
-	}
+	uint16_t normHerz = hertz / 10;
+	char configPacket[FREQ_LEN];
+	memcpy(configPacket, CFG_RATE, FREQ_LEN);
 
-	return;
+	configPacket[NAV_RATE_1] = (char)(normHerz & 0xFF);
+	configPacket[NAV_RATE_2] = (char)((normHerz >> 8) & 0xFF);
+
+	insertChecksum(configPacket, FREQ_LEN);
+	sendPacket(configPacket, FREQ_LEN);
 }
 
 
 
+
+bool neo6mGPS::available()
+{
+	if (usingUSB)
+		return parseData_usb();
+	else
+		return parseData();
+}
+
+
+
+
+bool neo6mGPS::parseData()
+{
+	while (_port->available())
+	{
+		char recChar = _port->read();
+
+		if (recChar == '\n')
+		{
+			headerFound = false;
+			fieldNum = 0;
+			fieldIndex = 0;
+			return true;
+		}
+		else if (((recChar == ',') && headerFound) || ((recChar == '*') && headerFound))
+		{
+			fieldNum++;
+			fieldIndex = 0;
+		}
+		else if (not headerFound)
+		{
+			if (recChar == header[fieldIndex])
+			{
+				fieldIndex++;
+				if (fieldIndex == HEADER_LEN)
+				{
+					headerFound = true;
+				}
+			}
+		}
+		else
+		{
+			if ((fieldNum < NUM_FIELDS) && (fieldIndex < FIELD_LEN))
+			{
+				data[fieldNum][fieldIndex] = recChar;
+				fieldIndex++;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+
+
+bool neo6mGPS::parseData_usb()
+{
+	while (usb_port->available())
+	{
+		char recChar = usb_port->read();
+
+		if (recChar == '\n')
+		{
+			headerFound = false;
+			fieldNum = 0;
+			fieldIndex = 0;
+
+			updateValues();
+			return true;
+		}
+		else if (((recChar == ',') && headerFound) || ((recChar == '*') && headerFound))
+		{
+			fieldNum++;
+			fieldIndex = 0;
+		}
+		else if (not headerFound)
+		{
+			if (recChar == header[fieldIndex])
+			{
+				fieldIndex++;
+				if (fieldIndex == HEADER_LEN)
+					headerFound = true;
+			}
+		}
+		else
+		{
+			if ((fieldNum < NUM_FIELDS) && (fieldIndex < FIELD_LEN))
+			{
+				data[fieldNum][fieldIndex] = recChar;
+				fieldIndex++;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+
+
+void neo6mGPS::updateValues()
+{
+	utc       = atof(data[1]);
+	navStatus = data[2][0];
+	lat       = atof(data[3]);
+	latDir    = data[3][0];
+	lon       = atof(data[4]);
+	lonDir    = data[5][0];
+	sog_knots = atof(data[6]);
+	cog_true  = atof(data[7]);
+}
+
+
+
+
+void neo6mGPS::setSentence(char NMEA_num, bool enable)
+{
+	char configPacket[NMEA_LEN];
+	memcpy(configPacket, CFG_MSG, NMEA_LEN);
+
+	if (enable)
+		configPacket[SERIAL_1_POS] = 1;
+
+	configPacket[NMEA_ID_POS] = NMEA_num;
+	insertChecksum(configPacket, NMEA_LEN);
+
+	sendPacket(configPacket, NMEA_LEN);
+}
+
+
+
+
+void neo6mGPS::insertChecksum(char packet[], const byte len)
+{
+	uint8_t ck_a = 0;
+	uint8_t ck_b = 0;
+
+	// exclude the first and last two bytes in packet
+	for (byte i = 2; i < (len - 2); i++)
+	{
+		ck_a += packet[i];
+		ck_b += ck_a;
+	}
+
+	packet[len - 2] = ck_a;
+	packet[len - 1] = ck_b;
+}
+
+
+
+
+void neo6mGPS::sendPacket(char packet[], const byte len)
+{
+	if (usingUSB)
+		usb_port->write(packet, len);
+	else
+		_port->write(packet, len);
+}
+
+
+
+
+void neo6mGPS::sendPacket(const char packet[], const byte len)
+{
+	if (usingUSB)
+		usb_port->write(packet, len);
+	else
+		_port->write(packet, len);
+}
