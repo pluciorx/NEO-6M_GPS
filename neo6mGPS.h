@@ -4,8 +4,11 @@
 
 
 
-#define NEO_BUFF_LEN   10
-#define NEO_HEADER_LEN 6
+constexpr byte NEO_BUFF_LEN   = 10;
+constexpr byte NEO_HEADER_LEN = 6;
+constexpr byte NUM_FIELDS     = 13;
+constexpr byte FIELD_LEN      = 10;
+constexpr byte HEADER_LEN     = 6;
 
 
 
@@ -115,14 +118,31 @@ const char CFG_PRT[BAUD_LEN] = {
 class neo6mGPS
 {
 public:// <<---------------------------------------------------------------------------//public
+	char data[NUM_FIELDS][FIELD_LEN];
+	float utc       = 0;
+	char navStatus  = 'V';
+	float lat       = 0;
+	char latDir     = ' ';
+	float lon       = 0;
+	char lonDir     = ' ';
+	float sog_knots = 0;
+	float cog_true  = 0;
+
+
+
+
 	void begin(HardwareSerial &port);
 	void begin(usb_serial_class &port);
-	void setupGPS();
+	void begin(HardwareSerial &port, uint32_t baud, uint16_t hertz);
+	void begin(usb_serial_class &port, uint32_t baud, uint16_t hertz);
+
+	void setupGPS(uint32_t baud, uint16_t hertz);
 	void disableAllNmea();
 	void enableAllNmea();
 	void setSentence(char NMEA_num, bool enable);
 	void changeBaud(uint32_t baud);
 	void changeFreq(uint16_t hertz);
+	bool available();
 
 
 
@@ -132,10 +152,19 @@ private:// <<-------------------------------------------------------------------
 	usb_serial_class* usb_port;
 	bool usingUSB = false;
 
+	const char header[HEADER_LEN] = { '$', 'G', 'P', 'R', 'M', 'C' };
+	bool headerFound = false;
+	
+	byte fieldNum = 0;
+	byte fieldIndex = 0;
+
 
 
 
 	void enableSelectedNmea();
+	bool parseData();
+	bool parseData_usb();
+	void updateValues();
 	void insertChecksum(char packet[], const byte len);
 	void sendPacket(char packet[], const byte len);
 	void sendPacket(const char packet[], const byte len);
