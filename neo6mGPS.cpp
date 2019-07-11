@@ -3,36 +3,59 @@
 
 
 
-//initialize the GPS data extractor class and the GPS itself
 void neo6mGPS::begin(HardwareSerial &port)
 {
 	_port = &port;
-
 	_port->begin(9600);
+
+	setupGPS(115200, 10);
 }
 
 
 
 
-//initialize the GPS data extractor class and the GPS itself
 void neo6mGPS::begin(usb_serial_class &port)
 {
 	usingUSB = true;
 	usb_port = &port;
+	usb_port->begin(9600);
 
-	usb_port->begin(115200);
+	setupGPS(115200, 10);
+}
+
+
+
+
+void neo6mGPS::begin(HardwareSerial &port, uint32_t baud, uint16_t hertz)
+{
+	_port = &port;
+	_port->begin(9600);
+
+	setupGPS(baud, hertz);
+}
+
+
+
+
+void neo6mGPS::begin(usb_serial_class &port, uint32_t baud, uint16_t hertz)
+{
+	usingUSB = true;
+	usb_port = &port;
+	usb_port->begin(9600);
+
+	setupGPS(baud, hertz);
 }
 
 
 
 
 //setup GPS and load non-default configuration settings
-void neo6mGPS::setupGPS()
+void neo6mGPS::setupGPS(uint32_t baud, uint16_t hertz)
 {
 	disableAllNmea();
 	enableSelectedNmea();
-	changeBaud(115200);
-	changeFreq(10);
+	changeBaud(baud);
+	changeFreq(hertz);
 }
 
 
@@ -125,6 +148,122 @@ void neo6mGPS::changeFreq(uint16_t hertz)
 
 	insertChecksum(configPacket, FREQ_LEN);
 	sendPacket(configPacket, FREQ_LEN);
+}
+
+
+
+
+bool neo6mGPS::available()
+{
+	if (usingUSB)
+		return parseData_usb();
+	else
+		return parseData();
+}
+
+
+
+
+bool neo6mGPS::parseData()
+{
+	while (_port->available())
+	{
+		char recChar = _port->read();
+
+		if (recChar == '\n')
+		{
+			headerFound = false;
+			fieldNum = 0;
+			fieldIndex = 0;
+			return true;
+		}
+		else if (((recChar == ',') && headerFound) || ((recChar == '*') && headerFound))
+		{
+			fieldNum++;
+			fieldIndex = 0;
+		}
+		else if (not headerFound)
+		{
+			if (recChar == header[fieldIndex])
+			{
+				fieldIndex++;
+				if (fieldIndex == HEADER_LEN)
+				{
+					headerFound = true;
+				}
+			}
+		}
+		else
+		{
+			if ((fieldNum < NUM_FIELDS) && (fieldIndex < FIELD_LEN))
+			{
+				data[fieldNum][fieldIndex] = recChar;
+				fieldIndex++;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+
+
+bool neo6mGPS::parseData_usb()
+{
+	while (usb_port->available())
+	{
+		char recChar = usb_port->read();
+
+		if (recChar == '\n')
+		{
+			headerFound = false;
+			fieldNum = 0;
+			fieldIndex = 0;
+
+			updateValues();
+			return true;
+		}
+		else if (((recChar == ',') && headerFound) || ((recChar == '*') && headerFound))
+		{
+			fieldNum++;
+			fieldIndex = 0;
+		}
+		else if (not headerFound)
+		{
+			if (recChar == header[fieldIndex])
+			{
+				fieldIndex++;
+				if (fieldIndex == HEADER_LEN)
+					headerFound = true;
+			}
+		}
+		else
+		{
+			if ((fieldNum < NUM_FIELDS) && (fieldIndex < FIELD_LEN))
+			{
+				data[fieldNum][fieldIndex] = recChar;
+				fieldIndex++;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+
+
+void neo6mGPS::updateValues()
+{
+	utc       = atof(data[1]);
+	navStatus = data[2][0];
+	lat       = atof(data[3]);
+	latDir    = data[3][0];
+	lon       = atof(data[4]);
+	lonDir    = data[5][0];
+	sog_knots = atof(data[6]);
+	cog_true  = atof(data[7]);
 }
 
 
