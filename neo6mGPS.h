@@ -162,8 +162,7 @@ private:// <<-------------------------------------------------------------------
 
 
 	void enableSelectedNmea();
-	bool parseData();
-	bool parseData_usb();
+	int8_t parseData(char recChar);
 	void updateValues();
 	void insertChecksum(char packet[], const byte len);
 	void sendPacket(char packet[], const byte len);
