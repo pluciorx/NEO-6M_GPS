@@ -155,50 +155,38 @@ void neo6mGPS::changeFreq(uint16_t hertz)
 
 bool neo6mGPS::available()
 {
+	char recChar;
+	int8_t result;
+
 	if (usingUSB)
-		return parseData_usb();
+	{
+		while (usb_port->available())
+		{
+			recChar = usb_port->read();
+			result = parseData(recChar);
+
+			if (result != -1)
+			{
+				if (result)
+					return true;
+				else
+					return false;
+			}
+		}
+	}
 	else
-		return parseData();
-}
-
-
-
-
-bool neo6mGPS::parseData()
-{
-	while (_port->available())
 	{
-		char recChar = _port->read();
+		while (_port->available())
+		{
+			recChar = _port->read();
+			result = parseData(recChar);
 
-		if (recChar == '\n')
-		{
-			headerFound = false;
-			fieldNum = 0;
-			fieldIndex = 0;
-			return true;
-		}
-		else if (((recChar == ',') && headerFound) || ((recChar == '*') && headerFound))
-		{
-			fieldNum++;
-			fieldIndex = 0;
-		}
-		else if (not headerFound)
-		{
-			if (recChar == header[fieldIndex])
+			if (result != -1)
 			{
-				fieldIndex++;
-				if (fieldIndex == HEADER_LEN)
-				{
-					headerFound = true;
-				}
-			}
-		}
-		else
-		{
-			if ((fieldNum < NUM_FIELDS) && (fieldIndex < FIELD_LEN))
-			{
-				data[fieldNum][fieldIndex] = recChar;
-				fieldIndex++;
+				if (result)
+					return true;
+				else
+					return false;
 			}
 		}
 	}
@@ -209,46 +197,44 @@ bool neo6mGPS::parseData()
 
 
 
-bool neo6mGPS::parseData_usb()
+int8_t neo6mGPS::parseData(char recChar)
 {
-	while (usb_port->available())
+	if (recChar == '\n')
 	{
-		char recChar = usb_port->read();
-
-		if (recChar == '\n')
-		{
-			headerFound = false;
-			fieldNum = 0;
-			fieldIndex = 0;
-
-			updateValues();
-			return true;
-		}
-		else if (((recChar == ',') && headerFound) || ((recChar == '*') && headerFound))
-		{
-			fieldNum++;
-			fieldIndex = 0;
-		}
-		else if (not headerFound)
-		{
-			if (recChar == header[fieldIndex])
-			{
-				fieldIndex++;
-				if (fieldIndex == HEADER_LEN)
-					headerFound = true;
-			}
-		}
+		headerFound = false;
+		fieldNum = 0;
+		fieldIndex = 0;
+		updateValues();
+			
+		if (navStatus == 'A')
+			return 1;
 		else
+			return 0;
+	}
+	else if (((recChar == ',') && headerFound) || ((recChar == '*') && headerFound))
+	{
+		fieldNum++;
+		fieldIndex = 0;
+	}
+	else if (not headerFound)
+	{
+		if (recChar == header[fieldIndex])
 		{
-			if ((fieldNum < NUM_FIELDS) && (fieldIndex < FIELD_LEN))
-			{
-				data[fieldNum][fieldIndex] = recChar;
-				fieldIndex++;
-			}
+			fieldIndex++;
+			if (fieldIndex == HEADER_LEN)
+				headerFound = true;
+		}
+	}
+	else
+	{
+		if ((fieldNum < NUM_FIELDS) && (fieldIndex < FIELD_LEN))
+		{
+			data[fieldNum][fieldIndex] = recChar;
+			fieldIndex++;
 		}
 	}
 
-	return false;
+	return -1;
 }
 
 
