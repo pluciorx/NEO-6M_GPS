@@ -49,7 +49,6 @@ void neo6mGPS::begin(usb_serial_class &port, uint32_t baud, uint16_t hertz)
 
 
 
-//setup GPS and load non-default configuration settings
 void neo6mGPS::setupGPS(uint32_t baud, uint16_t hertz)
 {
 	disableAllNmea();
@@ -61,7 +60,6 @@ void neo6mGPS::setupGPS(uint32_t baud, uint16_t hertz)
 
 
 
-//send a set of packets to the receiver to disable NMEA messages
 void neo6mGPS::disableAllNmea()
 {
 	setSentence(GPGGA, false);
@@ -75,7 +73,6 @@ void neo6mGPS::disableAllNmea()
 
 
 
-//send a set of packets to the receiver to enable NMEA messages
 void neo6mGPS::enableAllNmea()
 {
 	setSentence(GPGGA, true);
@@ -89,7 +86,6 @@ void neo6mGPS::enableAllNmea()
 
 
 
-//send a set of packets to the receiver to enable NMEA messages
 void neo6mGPS::enableSelectedNmea()
 {
 	//comment or uncomment based on what sentences desired
@@ -105,7 +101,6 @@ void neo6mGPS::enableSelectedNmea()
 
 
 
-//send a packet to the receiver to change baudrate
 void neo6mGPS::changeBaud(uint32_t baud)
 {
 	char configPacket[BAUD_LEN];
@@ -136,7 +131,6 @@ void neo6mGPS::changeBaud(uint32_t baud)
 
 
 
-//send a packet to the receiver to change frequency
 void neo6mGPS::changeFreq(uint16_t hertz)
 {
 	uint16_t normHerz = hertz / 10;
