@@ -1,327 +1,175 @@
-#include "neo6mGPS.h"
+#pragma once
+#include "Arduino.h"
 
 
 
 
-void neo6mGPS::begin(HardwareSerial &port)
+constexpr byte NEO_BUFF_LEN   = 10;
+constexpr byte NEO_HEADER_LEN = 6;
+constexpr byte NUM_FIELDS     = 20;
+constexpr byte FIELD_LEN      = 10;
+constexpr byte HEADER_LEN     = 6;
+
+
+
+
+const byte NMEA_LEN = 16;
+const byte FREQ_LEN = 14;
+const byte BAUD_LEN = 28;
+
+const byte GPGGA = 0;
+const byte GPGLL = 1;
+const byte GPGLV = 2;
+const byte GPGSA = 3;
+const byte GPRMC = 4;
+const byte GPVTG = 5;
+
+const byte NMEA_ID_POS  = 7;
+const byte DDC_POS      = 8;
+const byte SERIAL_1_POS = 9;
+const byte SERIAL_2_POS = 10;
+const byte USB_POS      = 11;
+const byte SPI_POS      = 12;
+
+const byte BAUD_0 = 14;
+const byte BAUD_1 = 15;
+const byte BAUD_2 = 16;
+const byte BAUD_3 = 17;
+
+const byte MEAS_RATE_1 = 6;
+const byte MEAS_RATE_2 = 7;
+const byte NAV_RATE_1  = 8;
+const byte NAV_RATE_2  = 9;
+
+
+
+
+const char CFG_MSG[NMEA_LEN] = {
+	0xB5, // Header char 1
+	0x62, // Header char 2
+	0x06, // class
+	0x01, // id
+	0x08, // length LSB
+	0x00, // length MSB
+	0xF0, // payload (NMEA sentence ID char 1)
+	0x00, // payload (NMEA sentence ID char 2)
+	0x00, // payload I/O Target 0 - DDC           - (1 - enable sentence, 0 - disable)
+	0x00, // payload I/O Target 1 - Serial Port 1 - (1 - enable sentence, 0 - disable)
+	0x00, // payload I/O Target 2 - Serial Port 2 - (1 - enable sentence, 0 - disable)
+	0x00, // payload I/O Target 3 - USB           - (1 - enable sentence, 0 - disable)
+	0x00, // payload I/O Target 4 - SPI           - (1 - enable sentence, 0 - disable)
+	0x00, // payload I/O Target 5 - Reserved      - (1 - enable sentence, 0 - disable)
+	0x00, // CK_A
+	0x00  // CK_B
+};
+
+const char CFG_RATE[FREQ_LEN] = {
+	0xB5, // sync char 1
+	0x62, // sync char 2
+	0x06, // class
+	0x08, // id
+	0x06, // length LSB
+	0x00, // length MSB
+	0x64, // payload measRate (ms) 1
+	0x00, // payload measRate (ms) 2
+	0x00, // payload navRate (cycles) 1
+	0x00, // payload navRate (cycles) 2
+	0x01, // payload timeRef 1
+	0x00, // payload timeRef 2
+	0x00, // CK_A
+	0x00  // CK_B
+};
+
+const char CFG_PRT[BAUD_LEN] = {
+	0xB5, // sync char 1
+	0x62, // sync char 2
+	0x06, // class
+	0x00, // id
+	0x14, // length LSB
+	0x00, // length MSB
+	0x01, // payload portID
+	0x00, // payload reserved0
+	0x00, // payload txReady 1
+	0x00, // payload txReady 2
+	0xD0, // payload mode 1
+	0x08, // payload mode 2
+	0x00, // payload mode 3
+	0x00, // payload mode 4
+	0x00, // payload baudRate 0 (LSB)
+	0x00, // payload baudRate 1
+	0x00, // payload baudRate 2
+	0x00, // payload baudRate 3 (MSB)
+	0x07, // payload inProtoMask 1
+	0x00, // payload inProtoMask 2
+	0x03, // payload outProtoMask 1
+	0x00, // payload outProtoMask 2
+	0x00, // payload reserved4 1
+	0x00, // payload reserved4 2
+	0x00, // payload reserved5 1
+	0x00, // payload reserved5 2
+	0x00, // CK_A
+	0x00  // CK_B
+};
+
+const char GPGGA_header[HEADER_LEN] = { '$', 'G', 'P', 'G', 'G', 'A' };
+const char GPGLL_header[HEADER_LEN] = { '$', 'G', 'P', 'G', 'L', 'L' };
+const char GPGLV_header[HEADER_LEN] = { '$', 'G', 'P', 'G', 'L', 'V' };
+const char GPGSA_header[HEADER_LEN] = { '$', 'G', 'P', 'G', 'S', 'A' };
+const char GPRMC_header[HEADER_LEN] = { '$', 'G', 'P', 'R', 'M', 'C' };
+const char GPVTG_header[HEADER_LEN] = { '$', 'G', 'P', 'V', 'T', 'G' };
+
+
+
+
+class neo6mGPS
 {
-	_port = &port;
-	_port->begin(9600);
+public:// <<---------------------------------------------------------------------------//public
+	char data[NUM_FIELDS][FIELD_LEN];
+	float utc       = 0;
+	float lat       = 0;
+	float lon       = 0;
+	float sog_knots = 0;
+	float cog_true  = 0;
+	char navStatus  = 'V';
+	char latDir     = ' ';
+	char lonDir     = ' ';
 
-	setupGPS(115200, 10);
-}
 
 
 
+	void begin(HardwareSerial &port);
+	void begin(usb_serial_class &port);
+	void begin(HardwareSerial &port, uint32_t baud, uint16_t hertz);
+	void begin(usb_serial_class &port, uint32_t baud, uint16_t hertz);
 
-void neo6mGPS::begin(usb_serial_class &port)
-{
-	usingUSB = true;
-	usb_port = &port;
-	usb_port->begin(9600);
+	void setupGPS(uint32_t baud, uint16_t hertz);
+	void disableAllNmea();
+	void enableAllNmea();
+	void setSentence(char NMEA_num, bool enable);
+	void changeBaud(uint32_t baud);
+	void changeFreq(uint16_t hertz);
+	bool available();
 
-	setupGPS(115200, 10);
-}
 
 
 
+private:// <<---------------------------------------------------------------------------//private
+	HardwareSerial* _port;
+	usb_serial_class* usb_port;
+	bool usingUSB = false;
+	
+	bool startByteFound = false;
+	byte fieldNum = 0;
+	byte fieldIndex = 0;
 
-void neo6mGPS::begin(HardwareSerial &port, uint32_t baud, uint16_t hertz)
-{
-	_port = &port;
-	_port->begin(9600);
 
-	setupGPS(baud, hertz);
-}
 
 
-
-
-void neo6mGPS::begin(usb_serial_class &port, uint32_t baud, uint16_t hertz)
-{
-	usingUSB = true;
-	usb_port = &port;
-	usb_port->begin(9600);
-
-	setupGPS(baud, hertz);
-}
-
-
-
-
-void neo6mGPS::setupGPS(uint32_t baud, uint16_t hertz)
-{
-	disableAllNmea();
-	enableSelectedNmea();
-	changeBaud(baud);
-	changeFreq(hertz);
-}
-
-
-
-
-void neo6mGPS::disableAllNmea()
-{
-	setSentence(GPGGA, false);
-	setSentence(GPGLL, false);
-	setSentence(GPGLV, false);
-	setSentence(GPGSA, false);
-	setSentence(GPRMC, false);
-	setSentence(GPVTG, false);
-}
-
-
-
-
-void neo6mGPS::enableAllNmea()
-{
-	setSentence(GPGGA, true);
-	setSentence(GPGLL, true);
-	setSentence(GPGSA, true);
-	setSentence(GPGLV, true);
-	setSentence(GPRMC, true);
-	setSentence(GPVTG, true);
-}
-
-
-
-
-void neo6mGPS::enableSelectedNmea()
-{
-	//comment or uncomment based on what sentences desired
-
-	//setSentence(GPGGA, true);
-	//setSentence(GPGLL, true);
-	//setSentence(GPGSA, true);
-	//setSentence(GPGLV, true);
-	setSentence(GPRMC, true);
-	//setSentence(GPVTG, true);
-}
-
-
-
-
-void neo6mGPS::changeBaud(uint32_t baud)
-{
-	char configPacket[BAUD_LEN];
-	memcpy(configPacket, CFG_PRT, BAUD_LEN);
-
-	configPacket[BAUD_0] = (char)(baud & 0xFF);
-	configPacket[BAUD_1] = (char)((baud >> 8) & 0xFF);
-	configPacket[BAUD_2] = (char)((baud >> 16) & 0xFF);
-	configPacket[BAUD_3] = (char)((baud >> 24) & 0xFF);
-
-	insertChecksum(configPacket, BAUD_LEN);
-	sendPacket(configPacket, BAUD_LEN);
-
-	delay(100);
-
-	if (usingUSB)
-	{
-		usb_port->flush();
-		usb_port->begin(baud);
-	}
-	else
-	{
-		_port->flush();
-		_port->begin(baud);
-	}
-}
-
-
-
-
-void neo6mGPS::changeFreq(uint16_t hertz)
-{
-	uint16_t normHerz = hertz / 10;
-	char configPacket[FREQ_LEN];
-	memcpy(configPacket, CFG_RATE, FREQ_LEN);
-
-	configPacket[NAV_RATE_1] = (char)(normHerz & 0xFF);
-	configPacket[NAV_RATE_2] = (char)((normHerz >> 8) & 0xFF);
-
-	insertChecksum(configPacket, FREQ_LEN);
-	sendPacket(configPacket, FREQ_LEN);
-}
-
-
-
-
-bool neo6mGPS::available()
-{
-	char recChar;
-	bool endProcessing;
-
-	if (usingUSB)
-	{
-		while (usb_port->available())
-		{
-			recChar = usb_port->read();
-			endProcessing = parseData(recChar);
-
-			if (endProcessing)
-				return true;
-		}
-	}
-	else
-	{
-		while (_port->available())
-		{
-			recChar = _port->read();
-			endProcessing = parseData(recChar);
-
-			if (endProcessing)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-
-
-
-bool neo6mGPS::parseData(char recChar)
-{
-	if (recChar == '\n')
-	{
-		startByteFound = false;
-		fieldNum = 0;
-		fieldIndex = 0;
-		updateValues();
-			
-		return true;
-	}
-	else if (((recChar == ',') && startByteFound) || ((recChar == '*') && startByteFound))
-	{
-		fieldNum++;
-		fieldIndex = 0;
-	}
-	else if (!startByteFound)
-	{
-		if (recChar == '$')
-		{
-			startByteFound = true;
-			data[fieldNum][fieldIndex] = recChar;
-			fieldIndex++;
-		}
-	}
-	else
-	{
-		if ((fieldNum < NUM_FIELDS) && (fieldIndex < FIELD_LEN))
-		{
-			data[fieldNum][fieldIndex] = recChar;
-			fieldIndex++;
-		}
-	}
-
-	return false;
-}
-
-
-
-
-void neo6mGPS::updateValues()
-{
-	if (findSentence(GPGGA_header))
-	{
-		// TODO
-	}
-	else if (findSentence(GPGLL_header))
-	{
-		// TODO
-	}
-	else if (findSentence(GPGLV_header))
-	{
-		// TODO
-	}
-	else if (findSentence(GPGSA_header))
-	{
-		// TODO
-	}
-	else if (findSentence(GPRMC_header))
-	{
-		utc       = atof(data[1]);
-		navStatus = data[2][0];
-		lat       = atof(data[3]);
-		latDir    = data[3][0];
-		lon       = atof(data[4]);
-		lonDir    = data[5][0];
-		sog_knots = atof(data[6]);
-		cog_true  = atof(data[7]);
-	}
-	else if (findSentence(GPVTG_header))
-	{
-		// TODO
-	}
-}
-
-
-
-
-bool neo6mGPS::findSentence(const char header[])
-{
-	for (byte i = 0; i < HEADER_LEN; i++)
-		if (data[0][i] != header[i])
-			return false;
-
-	return true;
-}
-
-
-
-
-void neo6mGPS::setSentence(char NMEA_num, bool enable)
-{
-	char configPacket[NMEA_LEN];
-	memcpy(configPacket, CFG_MSG, NMEA_LEN);
-
-	if (enable)
-		configPacket[SERIAL_1_POS] = 1;
-
-	configPacket[NMEA_ID_POS] = NMEA_num;
-	insertChecksum(configPacket, NMEA_LEN);
-
-	sendPacket(configPacket, NMEA_LEN);
-}
-
-
-
-
-void neo6mGPS::insertChecksum(char packet[], const byte len)
-{
-	uint8_t ck_a = 0;
-	uint8_t ck_b = 0;
-
-	// exclude the first and last two bytes in packet
-	for (byte i = 2; i < (len - 2); i++)
-	{
-		ck_a += packet[i];
-		ck_b += ck_a;
-	}
-
-	packet[len - 2] = ck_a;
-	packet[len - 1] = ck_b;
-}
-
-
-
-
-void neo6mGPS::sendPacket(char packet[], const byte len)
-{
-	if (usingUSB)
-		usb_port->write(packet, len);
-	else
-		_port->write(packet, len);
-}
-
-
-
-
-void neo6mGPS::sendPacket(const char packet[], const byte len)
-{
-	if (usingUSB)
-		usb_port->write(packet, len);
-	else
-		_port->write(packet, len);
-}
+	void enableSelectedNmea();
+	bool parseData(char recChar);
+	void updateValues();
+	bool findSentence(const char header[]);
+	void insertChecksum(char packet[], const byte len);
+	void sendPacket(char packet[], const byte len);
+	void sendPacket(const char packet[], const byte len);
+};
