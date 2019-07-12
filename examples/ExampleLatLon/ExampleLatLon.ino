@@ -10,6 +10,7 @@ neo6mGPS myGPS;
 
 void setup()
 {
+  // turn on power led
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
   
