@@ -47,8 +47,8 @@ const char CFG_MSG[NMEA_LEN] = {
 	0x62, // Header char 2
 	0x06, // class
 	0x01, // id
-	0x08, // length char 1
-	0x00, // length char 2
+	0x08, // length LSB
+	0x00, // length MSB
 	0xF0, // payload (NMEA sentence ID char 1)
 	0x00, // payload (NMEA sentence ID char 2)
 	0x00, // payload I/O Target 0 - DDC           - (1 - enable sentence, 0 - disable)
@@ -66,8 +66,8 @@ const char CFG_RATE[FREQ_LEN] = {
 	0x62, // sync char 2
 	0x06, // class
 	0x08, // id
-	0x06, // length
-	0x00, // length
+	0x06, // length LSB
+	0x00, // length MSB
 	0x64, // payload measRate (ms) 1
 	0x00, // payload measRate (ms) 2
 	0x00, // payload navRate (cycles) 1
@@ -83,8 +83,8 @@ const char CFG_PRT[BAUD_LEN] = {
 	0x62, // sync char 2
 	0x06, // class
 	0x00, // id
-	0x14, // length
-	0x00, // length
+	0x14, // length LSB
+	0x00, // length MSB
 	0x01, // payload portID
 	0x00, // payload reserved0
 	0x00, // payload txReady 1
