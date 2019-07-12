@@ -6,7 +6,7 @@
 
 constexpr byte NEO_BUFF_LEN   = 10;
 constexpr byte NEO_HEADER_LEN = 6;
-constexpr byte NUM_FIELDS     = 13;
+constexpr byte NUM_FIELDS     = 20;
 constexpr byte FIELD_LEN      = 10;
 constexpr byte HEADER_LEN     = 6;
 
@@ -16,9 +16,6 @@ constexpr byte HEADER_LEN     = 6;
 const byte NMEA_LEN = 16;
 const byte FREQ_LEN = 14;
 const byte BAUD_LEN = 28;
-
-const byte GPS_NO_DATA  = 0;
-const byte GPS_NEW_DATA = 1;
 
 const byte GPGGA = 0;
 const byte GPGLL = 1;
@@ -112,6 +109,13 @@ const char CFG_PRT[BAUD_LEN] = {
 	0x00  // CK_B
 };
 
+const char GPGGA_header[HEADER_LEN] = { '$', 'G', 'P', 'G', 'G', 'A' };
+const char GPGLL_header[HEADER_LEN] = { '$', 'G', 'P', 'G', 'L', 'L' };
+const char GPGLV_header[HEADER_LEN] = { '$', 'G', 'P', 'G', 'L', 'V' };
+const char GPGSA_header[HEADER_LEN] = { '$', 'G', 'P', 'G', 'S', 'A' };
+const char GPRMC_header[HEADER_LEN] = { '$', 'G', 'P', 'R', 'M', 'C' };
+const char GPVTG_header[HEADER_LEN] = { '$', 'G', 'P', 'V', 'T', 'G' };
+
 
 
 
@@ -120,13 +124,13 @@ class neo6mGPS
 public:// <<---------------------------------------------------------------------------//public
 	char data[NUM_FIELDS][FIELD_LEN];
 	float utc       = 0;
-	char navStatus  = 'V';
 	float lat       = 0;
-	char latDir     = ' ';
 	float lon       = 0;
-	char lonDir     = ' ';
 	float sog_knots = 0;
 	float cog_true  = 0;
+	char navStatus  = 'V';
+	char latDir     = ' ';
+	char lonDir     = ' ';
 
 
 
@@ -151,10 +155,8 @@ private:// <<-------------------------------------------------------------------
 	HardwareSerial* _port;
 	usb_serial_class* usb_port;
 	bool usingUSB = false;
-
-	const char header[HEADER_LEN] = { '$', 'G', 'P', 'R', 'M', 'C' };
-	bool headerFound = false;
 	
+	bool startByteFound = false;
 	byte fieldNum = 0;
 	byte fieldIndex = 0;
 
@@ -162,8 +164,9 @@ private:// <<-------------------------------------------------------------------
 
 
 	void enableSelectedNmea();
-	int8_t parseData(char recChar);
+	bool parseData(char recChar);
 	void updateValues();
+	bool findSentence(const char header[]);
 	void insertChecksum(char packet[], const byte len);
 	void sendPacket(char packet[], const byte len);
 	void sendPacket(const char packet[], const byte len);
