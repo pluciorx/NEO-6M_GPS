@@ -36,8 +36,10 @@ const byte BAUD_1 = 15;
 const byte BAUD_2 = 16;
 const byte BAUD_3 = 17;
 
-const byte NAV_RATE_1 = 8;
-const byte NAV_RATE_2 = 9;
+const byte MEAS_RATE_1 = 6;
+const byte MEAS_RATE_2 = 7;
+const byte NAV_RATE_1  = 8;
+const byte NAV_RATE_2  = 9;
 
 
 
