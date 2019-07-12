@@ -156,22 +156,17 @@ void neo6mGPS::changeFreq(uint16_t hertz)
 bool neo6mGPS::available()
 {
 	char recChar;
-	int8_t result;
+	bool endProcessing;
 
 	if (usingUSB)
 	{
 		while (usb_port->available())
 		{
 			recChar = usb_port->read();
-			result = parseData(recChar);
+			endProcessing = parseData(recChar);
 
-			if (result != -1)
-			{
-				if (result)
-					return true;
-				else
-					return false;
-			}
+			if (endProcessing)
+				return true;
 		}
 	}
 	else
@@ -179,15 +174,10 @@ bool neo6mGPS::available()
 		while (_port->available())
 		{
 			recChar = _port->read();
-			result = parseData(recChar);
+			endProcessing = parseData(recChar);
 
-			if (result != -1)
-			{
-				if (result)
-					return true;
-				else
-					return false;
-			}
+			if (endProcessing)
+				return true;
 		}
 	}
 
@@ -197,32 +187,29 @@ bool neo6mGPS::available()
 
 
 
-int8_t neo6mGPS::parseData(char recChar)
+bool neo6mGPS::parseData(char recChar)
 {
 	if (recChar == '\n')
 	{
-		headerFound = false;
+		startByteFound = false;
 		fieldNum = 0;
 		fieldIndex = 0;
 		updateValues();
 			
-		if (navStatus == 'A')
-			return 1;
-		else
-			return 0;
+		return true;
 	}
-	else if (((recChar == ',') && headerFound) || ((recChar == '*') && headerFound))
+	else if (((recChar == ',') && startByteFound) || ((recChar == '*') && startByteFound))
 	{
 		fieldNum++;
 		fieldIndex = 0;
 	}
-	else if (not headerFound)
+	else if (!startByteFound)
 	{
-		if (recChar == header[fieldIndex])
+		if (recChar == '$')
 		{
+			startByteFound = true;
+			data[fieldNum][fieldIndex] = recChar;
 			fieldIndex++;
-			if (fieldIndex == HEADER_LEN)
-				headerFound = true;
 		}
 	}
 	else
@@ -234,7 +221,7 @@ int8_t neo6mGPS::parseData(char recChar)
 		}
 	}
 
-	return -1;
+	return false;
 }
 
 
@@ -242,14 +229,49 @@ int8_t neo6mGPS::parseData(char recChar)
 
 void neo6mGPS::updateValues()
 {
-	utc       = atof(data[1]);
-	navStatus = data[2][0];
-	lat       = atof(data[3]);
-	latDir    = data[3][0];
-	lon       = atof(data[4]);
-	lonDir    = data[5][0];
-	sog_knots = atof(data[6]);
-	cog_true  = atof(data[7]);
+	if (findSentence(GPGGA_header))
+	{
+		// TODO
+	}
+	else if (findSentence(GPGLL_header))
+	{
+		// TODO
+	}
+	else if (findSentence(GPGLV_header))
+	{
+		// TODO
+	}
+	else if (findSentence(GPGSA_header))
+	{
+		// TODO
+	}
+	else if (findSentence(GPRMC_header))
+	{
+		utc       = atof(data[1]);
+		navStatus = data[2][0];
+		lat       = atof(data[3]);
+		latDir    = data[3][0];
+		lon       = atof(data[4]);
+		lonDir    = data[5][0];
+		sog_knots = atof(data[6]);
+		cog_true  = atof(data[7]);
+	}
+	else if (findSentence(GPVTG_header))
+	{
+		// TODO
+	}
+}
+
+
+
+
+bool neo6mGPS::findSentence(const char header[])
+{
+	for (byte i = 0; i < HEADER_LEN; i++)
+		if (data[0][i] != header[i])
+			return false;
+
+	return true;
 }
 
 
